@@ -1,15 +1,15 @@
 import React from "react"
 
-const BookCard = ({ book: { id, title, author, content }, deleteBook }) => {
+const UserListCard = ({ userList: { book_id, rating, user_id }, deleteBook }) => {
   const handleDelete = () => {
     deleteBook(id);
   };
 
   return (
     <li>
-      <p>{title}</p>
-      <p>{author}</p>
-      <p>{content}</p>
+      <p>{book_id}</p>
+      <p>{user_id}</p>
+      <p>{rating}</p>
       <button onClick={handleDelete}>Delete</button>
     </li>
   );

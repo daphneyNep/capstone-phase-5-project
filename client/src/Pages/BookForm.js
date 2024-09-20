@@ -5,9 +5,9 @@ import { useNavigate } from "react-router-dom"
 const BookForm = ({ addBook }) => {
   const [BookForm, setBookForm] = useState({
     Id: "",
-    Title: "",
-    Author: "",
-    Content: ""
+    Book_Title: "",
+    Author_Id: "",
+    Summary: ""
   });
   const navigate = useNavigate();
 
@@ -24,10 +24,10 @@ const BookForm = ({ addBook }) => {
   
     // Ensure the book data is correctly formatted
     const bookData = {
-      id: parseInt(BookForm.Id, 10),  // Convert ID to integer
-      title: BookForm.Title,
-      author: BookForm.Author,
-      content: BookForm.Content
+      id: parseInt(BookForm.Book_Id, 10),  // Convert ID to integer
+      book_title: BookForm.Book_Title,
+      author_id: BookForm.Author_Id,
+      summary: BookForm.Summary
     };
   
     fetch("http://localhost:5555/books", {
@@ -59,46 +59,46 @@ const BookForm = ({ addBook }) => {
       <h2>Create Book</h2>
       <form onSubmit={handleSubmit}>
         <div>
-          <label htmlFor="Id">Id: </label>
+          <label htmlFor="Book_Id">Book_Id: </label>
           <input
             type="number"
-            name="Id"
-            id="Id"
-            value={BookForm.Id}
+            name="Book_Id"
+            id="Book_Id"
+            value={BookForm.Book_Id}
             onChange={handleChange}
             required
           />
         </div>
         <div>
-          <label htmlFor="Title">Title: </label>
+          <label htmlFor="Book_Title">Book_Title: </label>
           <input
             type="text"
-            name="Title"
-            id="Title"
-            value={BookForm.Title}
+            name="Book_Title"
+            id="Book_Title"
+            value={BookForm.Book_Title}
             onChange={handleChange}
             required
           />
         </div>
         <div>
-          <label htmlFor="Author">Author: </label>
+          <label htmlFor="Author_Id">Author_Id: </label>
           <input
             type="text"
-            name="Author"
-            id="Author"
-            value={BookForm.Author}
+            name="Author_Id"
+            id="Author_Id"
+            value={BookForm.Author_Id}
             onChange={handleChange}
             required
           />
         </div>
         <div>
-          <label htmlFor="Content">Content: </label>
+          <label htmlFor="Summary">Summary: </label>
           <textarea
-            name="Content"
-            id="Content"
+            name="Summary"
+            id="Summary"
             cols="30"
             rows="10"
-            value={BookForm.Content}
+            value={BookForm.Summary}
             onChange={handleChange}
             required
           />

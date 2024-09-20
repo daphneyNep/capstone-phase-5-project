@@ -1,120 +1,139 @@
 import React, { useEffect, useState } from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Navbar from "./Navigation/Navbar";
-import MemberForm from "../Pages/MemberForm";
-import MemberList from "../Pages/MemberList";
-import BookForm from "../Pages/BookForm";
-import BookList from "../Pages/BookList";
-import Headers from "../Pages/Headers";
-import Search from "../Pages/Search";
-import MemberPage from "../Pages/MemberPage";
-import '@fontsource/roboto/300.css';
-import '@fontsource/roboto/400.css';
-import '@fontsource/roboto/500.css';
-import '@fontsource/roboto/700.css';
+import { Route, Routes } from "react-router-dom";
+
+import Home from "./Home";
+import AuthorForm from "./Author/AuthorForm";
+import AuthorContainer from "./Author/AuthorContainer";
+import AuthorDetail from "./Author/AuthorDetail";
+import BookContainer from "./Book/BookContainer";
+import BookForm from "./Book/BookForm";
+import BookDetail from "./Book/BookDetail";
+import UserContainer from "./User/UserContainer";
+import UserForm from "./User/UserForm";
+import UserDetail from "./User/UserDetail";
 
 
-
+import NavBar from "./NavBar";
+import Header from "./Header";
 
 function App() {
-  const [members, setMembers] = useState([]);
+
   const [books, setBooks] = useState([]);
-  const [term, setTerm] = useState("");
-
-  function addMember(member) {
-    setMembers([...members, member]);
-  }
-
-  function addBook(book) {
-    setBooks([...books, book]);
-  }
+  const [authors, setAuthors] = useState([]);
+  const [users, setUsers] = useState([]);
 
   useEffect(() => {
-    fetch("http://localhost:5555/members")
-      .then(response => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        return response.json();
-      })
-      .then(data => setMembers(data))
-      .catch(error => console.error('Error fetching members:', error));
+    // Fetch data from backend
+    fetch("http://127.0.0.1:5555/book")
+      .then((res) => res.ok ? res.json() : Promise.reject("Failed to fetch books"))
+      .then((data) => setBooks(data))
+      .catch((error) => console.error(error));
+
+    fetch("http://127.0.0.1:5555/author")
+      .then((res) => res.ok ? res.json() : Promise.reject("Failed to fetch authors"))
+      .then((data) => setAuthors(data))
+      .catch((error) => console.error(error));
+    
+      fetch("http://127.0.0.1:5555/user")
+      .then((res) => res.ok ? res.json() : Promise.reject("Failed to fetch users"))
+      .then((data) => setUsers(data))
+      .catch((error) => console.error(error));
   }, []);
 
- 
-  const deleteMember = (memberId) => {
-    fetch(`http://localhost:5555/books/${memberId}`, {
+  const addAuthor = (author) => setAuthors((prev) => [...prev, author]);
+  const addBook = (book) => setBooks((prev) => [...prev, book]);
+  const addUser = (user) => setUsers((prev) => [...prev, user])
+
+  const onDeleteAuthor = (id) => {
+    fetch(`http://127.0.0.1:5555/author/${author_id}`, {
         method: 'DELETE',
     })
     .then(response => {
-        if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
+        if (response.ok) {
+            return response.json();
+        } else {
+            return response.json().then(data => {
+                throw new Error(data.error || 'Failed to delete author');
+            });
         }
-        // Remove the book from the state
-        setMembers(prevMembers => prevMembers.filter(member => member.id !== memberId));
+
     })
-    .catch(error => console.error('Error deleting member:', error));
+    .then(data => {
+        if (data.message === 'Author deleted successfully') {
+            setAuthors(prevAuthors => prevAuthors.filter(author_id => author_id !==author_id));
+        } else {
+            console.error('Failed to delete author:', data.error);
+        }
+
+    })
+    .catch(error => console.error('Error:', error));
 };
-  
-  useEffect(() => {
-    fetch("http://localhost:5555/books")
-      .then(response => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        return response.json();
-      })
-      .then(data => setBooks(data))
-      .catch(error => console.error('Error fetching books:', error));
-  }, []);
 
-  function deleteBook(id) {
-    fetch(`http://localhost:5555/books/${id}`, {
-      method: "DELETE",
-      headers: {
-        "Accept": "application/json",
-        "Content-Type": "application/json"
-      }
+const onDeleteBook = (id) => {
+    fetch(`http://127.0.0.1:5555/book/${id}`, {
+        method: 'DELETE',
     })
-      .then(response => {
-        if (!response.ok) {
-          return response.json().then(errorData => {
-            throw new Error(`Server responded with ${response.status}: ${errorData.message}`);
-          });
+    .then(response => {
+        if (response.ok) {
+            return response.json();
+        } else {
+            return response.json().then(data => {
+                throw new Error(data.error || 'Failed to delete book');
+            });
         }
-        return response.json();
-      })
-      .then(data => {
-        console.log('Book deleted successfully:', data);
-        // Handle successful delete, e.g., refresh the list of books
-      })
-      .catch(error => console.error('Error deleting book:', error));
-  }
 
+    })
+    .then(data => {
+        if (data.message === 'Book deleted successfully') {
+            setBooks(prevBooks => prevBooks.filter(id=> id !==id));
+        } else {
+            console.error('Failed to delete id', data.error);
+        }
+    })
+    .catch(error => console.error('Error:', error));
+};
 
-  const viewedMembers = members.filter(member =>
-    member.membername && member.membername.toLowerCase().includes(term.toLowerCase())
-  );
-
-  const viewedBooks = Array.isArray(books) ? books.filter(book =>
-    book.title && book.title.toLowerCase().includes(term.toLowerCase())
-  ) : [];
-
-
-
+const onDeleteUser = (user_id) => {
+    fetch(`http://127.0.0.1:5555/user/${user_id}`, {
+        method: 'DELETE',
+    })
+    .then(response => {
+        if (response.ok) {
+            return response.json();
+        } else {
+            return response.json().then(data => {
+                throw new Error(data.error || 'Failed to delete user');
+            });
+        }
+        
+    })
+    .then(data => {
+        if (data.message === 'User deleted successfully') {
+            setUsers(prevUsers => prevUsers.filter(user_id=> user_id !==user_id));
+        } else {
+            console.error('Failed to delete user_id', data.error);
+        }
+    })
+    .catch(error => console.error('Error:', error));
+};
 
   return (
-    <Router>
-      <Navbar />
+    <div className="App light">
+      <Header />
+      <NavBar />
       <Routes>
-        <Route path="/" element={<Headers />} />
-        <Route path="/search" element={<Search books={viewedBooks} />} />
-        <Route path="/Member-New" element={<MemberForm addMember={addMember} members={viewedMembers} setTerm={setTerm} term={term} />} />
-        <Route path="/Members" element={<MemberList members={members} deleteMember={deleteMember}/>} />
-        <Route path="/Book-New" element={<BookForm addBook={addBook} books={viewedBooks} setTerm={setTerm} term={term} />} />
-        <Route path="/Books" element={<BookList books={books} deleteBook={deleteBook} />} />
+        <Route path="/author/new" element={<AuthorForm addAuthor={addAuthor} />} />
+        <Route path="/authors" element={<AuthorContainer authors={authors} onDeleteAuthor={onDeleteAuthor} />} />
+        <Route path="/authors/:id" element={<AuthorDetail />} />
+        <Route path="/book/new" element={<BookForm addBook={addBook}/>} />
+        <Route path="/books" element={<BookContainer books={books} onDeleteBook={onDeleteBook}/>} />
+        <Route path="/books/:id" element={<BookDetail />} />
+        <Route path="/user/new" element={<UserForm addUser={addUser}/>} />
+        <Route path="/users" element={<UserContainer users={users} onDeleteUser={onDeleteUser}/>} />
+        <Route path="/users/:id" element={<UserDetail />} />
+        <Route path="/" element={<Home />} />
       </Routes>
-    </Router>
+    </div>
   );
 }
 

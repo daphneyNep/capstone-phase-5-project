@@ -34,4 +34,28 @@ const Search = ({ books }) => {
     );
 };
 
+const filteredAuthors = authors.filter(author =>
+    book.title.toLowerCase().includes(query.toLowerCase())
+);
+
+return (
+    <div>
+        <input
+            type="text"
+            placeholder="Search for a author..."
+            value={query}
+            onChange={handleChange}
+        />
+        <ul>
+            {filteredAuthors.length > 0 ? (
+                filteredAuthors.map(author => (
+                    <li key={author}>{author_name} by {author_author}</li>
+                ))
+            ) : (
+                <li>No authors found</li>
+            )}
+        </ul>
+    </div>
+);
+
 export default Search;

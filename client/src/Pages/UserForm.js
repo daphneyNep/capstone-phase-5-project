@@ -2,33 +2,33 @@ import React from "react"
 import { useState} from "react"
 import { useNavigate } from "react-router-dom"
 
-const MemberForm = ({ addMember }) => {
-  const [memberForm, setMemberForm] = useState({
+const UserForm = ({ addUser }) => {
+  const [userForm, setUserForm] = useState({
     Id: "",
-    MemberName: "",
+    UserName: "",
     Password: ""
   });
 
   const navigate = useNavigate();
 
   function handleChange(event) {
-    const newMember = {
-      ...memberForm,
+    const newUser = {
+      ...userForm,
       [event.target.name]: event.target.value
     };
-    setMemberForm(newMember);
+    setUserForm(newUser);
   }
 
   function handleSubmit(e) {
     e.preventDefault();
   
-    fetch("http://localhost:5555/members", {
+    fetch("http://localhost:5555/users", {
       method: "POST",
       headers: {
         "Accept": "application/json",
         "content-Type": "application/json"
       },
-      body: JSON.stringify(memberForm)
+      body: JSON.stringify(userForm)
     })
       .then(response => {
         if (!response.ok) {
@@ -38,24 +38,24 @@ const MemberForm = ({ addMember }) => {
         }
         return response.json();
       })
-      .then(addedMember => {
-        addMember(addedMember);
-        navigate("/Members");
+      .then(addedUser => {
+        addUser(addedUser);
+        navigate("/Users");
       })
-      .catch(error => console.error('Error adding Member:', error));
+      .catch(error => console.error('Error adding User:', error));
   }
 
   return (
-    <div className="new-member-form">
-      <h2>Create Member</h2>
+    <div className="new-user-form">
+      <h2>Create User</h2>
       <form onSubmit={handleSubmit}>
         <div className="preferred">
-          <label className="large-label" htmlFor="MemberName">MemberName: </label>
+          <label className="large-label" htmlFor="UserName">UserName: </label>
           <input
             type="text"
-            name="MemberName"
-            id="MemberName"
-            value={memberForm.MemberName} // Corrected here
+            name="UserName"
+            id="UserName"
+            value={userForm.UserName} // Corrected here
             onChange={handleChange}
             required
           />
@@ -66,15 +66,15 @@ const MemberForm = ({ addMember }) => {
             type="text"
             name="Password"
             id="Password"
-            value={memberForm.Password} // Corrected here
+            value={userForm.Password} // Corrected here
             onChange={handleChange}
             required
           />
         </div><br />
-        <button type="submit">Add Member</button>
+        <button type="submit">Add User</button>
       </form>
     </div>
   );
 }
 
-export default MemberForm
+export default UserForm
