@@ -39,10 +39,10 @@ class Author(db.Model, SerializerMixin):
     __tablename__ = 'authors'
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String, nullable=False)
-    genre = db.Column(db.String, nullable=False)
-    bio = db.Column(db.Text, nullable=False)
-    image_url = db.Column(db.String, nullable=True)  # Field for image URL
+    name = db.Column(db.String )
+    genre = db.Column(db.String )
+    bio = db.Column(db.Text)
+    image_url = db.Column(db.String)  # Field for image URL
 
 
     # One-to-Many relationship: An author has many books
@@ -51,17 +51,8 @@ class Author(db.Model, SerializerMixin):
     # Fields to serialize
     serialize_rules = ('-books.author',)  # Exclude recursive serialization of book
 
-    def to_dict(self, only=None):
-        if only:
-            return {key: getattr(self, key) for key in only}
-        else:
-            return {
-                'id': self.id,
-                'name': self.name,
-                'genre': self.genre,
-                'bio': self.bio,
-                'image_url': self.image_url
-            }
+
+
 
 
 class User(db.Model, SerializerMixin):
@@ -71,13 +62,12 @@ class User(db.Model, SerializerMixin):
     username = db.Column(db.String, nullable=False)
     password = db.Column(db.String, nullable=False)
 
-    # One-to-Many: A user can have many comments
-    
-    
+    # One-to-Many: A user can have many comments and userlists
     comments = relationship('Comment', back_populates='user', cascade="all, delete-orphan")
+    userlists = relationship('UserList', back_populates='user', cascade="all, delete-orphan")
 
     # Fields to serialize
-    serialize_rules = ('-comments.user',)  # Avoid recursion in comments
+    serialize_rules = ('-comments.user', '-userlists.user')  # Avoid recursion in comments
 
     def __repr__(self):
         return f'<User {self.id}, {self.username}, {self.password}>'
@@ -106,16 +96,18 @@ class UserList(db.Model, SerializerMixin):
     __tablename__ = 'userlists'
 
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, nullable=False)
-    user_name = db.Column(db.String)
-    book_id = db.Column(db.Integer, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    book_id = db.Column(db.Integer, db.ForeignKey('books.id'), nullable=False)
     rating = db.Column(db.Integer, nullable=False)
 
-    # Many-to-Many: A user list can have many books, and a book can be part of many user lists
+
     books = relationship('Book', secondary=userlist_books, back_populates='userlists')
+    
+    # Relationship with User (the user that owns this list)
+    user = db.relationship('User', back_populates='userlists')
 
     # Fields to serialize
-    serialize_rules = ('-books.userLists',)  # Avoid recursion in books
+    serialize_rules = ('-books.userLists', '-user.userlists')  # Avoid recursion
 
     @validates('rating')
     def validate_rating(self, key, value):
@@ -124,7 +116,7 @@ class UserList(db.Model, SerializerMixin):
         return value
 
     def __repr__(self):
-        return f'<UserList {self.user_id}, {self.book_id}, {self.user_name}, {self.rating}>'
+        return f'<UserList user_id={self.user_id}, book_id={self.book_id}, rating={self.rating}>'
 
 
 

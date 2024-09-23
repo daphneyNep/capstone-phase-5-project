@@ -1,20 +1,28 @@
-from email import parser
-from flask import Flask, request, jsonify
+from flask import Flask, jsonify, request
 from config import app, db
-from models import Author, Book, Comment, User, db, UserList
+from models import Author, Book, Comment, User, UserList
 from flask_cors import CORS
 import logging
+from flask_migrate import Migrate
+from flask_sqlalchemy import SQLAlchemy
 
 from sqlalchemy.exc import SQLAlchemyError
 
-# Allow CORS for all routes
+
+
+app = Flask(__name__)
 CORS(app)
+
+db = SQLAlchemy()
+migrate = Migrate()
+
+logging.basicConfig(level=logging.INFO)
 
 @app.route('/')
 def index():
     return '<h1>Project Server</h1>'
 
-@app.route('/author', methods=['GET', 'POST'])
+
 
 
 @app.route('/author', methods=['GET', 'POST'])
@@ -33,7 +41,7 @@ def handle_authors():
             data = request.get_json(force=True)
             required_fields = ['name', 'genre']
             if not all(field in data for field in required_fields):
-                return jsonify({'error': 'Bad request, name, genre are required'}), 400
+                return jsonify({'error': 'Bad request, name and genre are required'}), 400
 
             new_author = Author(
                 name=data.get('name'),
@@ -44,12 +52,11 @@ def handle_authors():
             db.session.add(new_author)
             db.session.commit()
             return jsonify(new_author.to_dict()), 201
-        except ValueError as ve:
-            return jsonify({'error': f"Invalid date format: {ve}"}), 400
+        
         except Exception as e:
             db.session.rollback()
             logging.error(f"Error occurred during POST: {e}")
-            return jsonify({'error': 'Internal Server Error'}), 500
+            return jsonify({'error': str(e)}), 500
 
 @app.route('/user', methods=['GET', 'POST'])
 def handle_users():
@@ -59,25 +66,26 @@ def handle_users():
             output = [user.to_dict() for user in users]
             return jsonify(output)
         except Exception as e:
-            print(f"Error occurred during GET: {e}")
+            logging.error(f"Error occurred during GET: {e}")
             return jsonify({'error': 'Internal Server Error'}), 500
+
     elif request.method == 'POST':
         try:
-            data = request.get_json(force=True)
+            data = request.get_json()
             if data is None:
+                logging.error("No JSON data provided")
                 return jsonify({'error': 'Bad request, no JSON data provided'}), 400
             required_fields = ['username', 'password']
             if not all(field in data for field in required_fields):
                 return jsonify({'error': 'Bad request, username and password are required'}), 400
-            new_user = User(
-                username=data['username'],
-                password=data['password']
-            )
+
+            new_user = User(username=data['username'], password=data['password'])
             db.session.add(new_user)
             db.session.commit()
             return jsonify(new_user.to_dict()), 201
         except Exception as e:
-            print(f"Error occurred during POST: {e}")
+            db.session.rollback()
+            logging.error(f"Error occurred during POST: {e}")
             return jsonify({'error': 'Internal Server Error'}), 500
 
 @app.route('/author/<int:id>', methods=['GET', 'DELETE'])
@@ -130,31 +138,24 @@ def handle_books():
 
     elif request.method == 'POST':
         try:
-            data = request.get_json()
-            print(f"Received data: {data}")  # Debug statement
-
-            # Required fields
-            required_fields = ['title', 'id']
+            data = request.get_json(force=True)
+            required_fields = ['title']
             if not all(field in data for field in required_fields):
-                return jsonify({'error': 'Bad request, title and id are required'}), 400
-
-            # Handle optional fields with default values
-            summary = data.get('summary', '')  # Provide a default value if summary is missing
-            image_url = data.get('image_url')
-            author_id = data.get('author_id')
+                return jsonify({'error': 'Bad request, title is required'}), 400
 
             new_book = Book(
                 title=data['title'],
-                summary=summary,
-                image_url=image_url,
-                author_id=author_id
+                summary=data.get('summary', ''),
+                image_url=data.get('image_url'),
+                author_id=data.get('author_id'),
             )
             db.session.add(new_book)
             db.session.commit()
             return jsonify(new_book.to_dict()), 201
         except Exception as e:
+            db.session.rollback()
             print(f"Error occurred during POST: {e}")
-            db.session.rollback()  # Rollback the session in case of an error
+
             return jsonify({'error': 'Internal Server Error'}), 500
 
 @app.route('/book/<int:id>', methods=['GET', 'DELETE'])
@@ -170,6 +171,55 @@ def book_by_id(id):
         db.session.delete(book)
         db.session.commit()
         return jsonify({'message': 'Book deleted successfully'}), 200
+
+@app.route('/userlist', methods=['GET', 'POST'])
+def handle_userlist():
+    if request.method == 'GET':
+        try:
+            userlists = UserList.query.all()
+            output = [userlist.to_dict() for userlist in userlists]
+            return jsonify(output)
+        except Exception as e:
+            print(f"Error occurred during GET: {e}")
+            return jsonify({'error': 'Internal Server Error'}), 500
+            
+    elif request.method == 'POST':
+        try:
+            data = request.get_json(force=True)
+            if data is None:
+                return jsonify({'error': 'Bad request, no JSON data provided'}), 400
+            required_fields = ['user_id', 'book_id', 'rating']
+            if not all(field in data for field in required_fields):
+                return jsonify({'error': 'Bad request, user_id, book_id and rating are required'}), 400
+            
+            new_userlist = UserList(
+                user_id=data['user_id'],
+                book_id=data['book_id'],
+                rating=data['rating']
+            )
+            db.session.add(new_userlist)
+            db.session.commit()
+            return jsonify(new_userlist.to_dict()), 201
+        except Exception as e:
+            db.session.rollback()
+            print(f"Error occurred during POST: {e}")
+            return jsonify({'error': 'Internal Server Error'}), 500
+
+
+@app.route('/userlist/<int:id>', methods=['GET', 'DELETE'])
+def userlist_by_id(id):
+    userlist = UserList.query.get(id)
+    if request.method == 'GET':
+        if userlist is None:
+            return jsonify({'error': 'UserList not found'}), 404
+        return jsonify(userlist.to_dict())
+
+    elif request.method == 'DELETE':
+        if userlist is None:
+            return jsonify({'error': 'UserList not found'}), 404
+        db.session.delete(userlist)
+        db.session.commit()
+        return jsonify({'message': 'UserList deleted successfully'}), 200
     
 @app.route('/comments/<int:comment_id>', methods=['GET'])
 def get_comment(comment_id):
