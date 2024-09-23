@@ -182,38 +182,29 @@ def create_user_lists():
             "The Humble Family's Daughter Has A Spatial Pocket!": Book.query.filter_by(title="The Humble Family's Daughter Has A Spatial Pocket!").first(),
             "Pampered Poisonous Royal Wife": Book.query.filter_by(title="Pampered Poisonous Royal Wife").first(),
             "She Became The Boss's Lady After Divorce": Book.query.filter_by(title="She Became The Boss's Lady After Divorce").first(),
-            "Reborn in the Seventies: Pampered Wife...": Book.query.filter_by(title="Reborn in the Seventies: Pampered Wife, Owning some Farmland").first(),
-            "The wealthy stepmom became wildly popular...": Book.query.filter_by(title="The wealthy stepmom became wildly popular in the parenting show").first()
+            "Reborn in the Seventies: Pampered Wife...": Book.query.filter_by(title="Reborn in the Seventies: Pampered Wife...").first(),
+            "The wealthy stepmom became wildly popular...": Book.query.filter_by(title="The wealthy stepmom became wildly popular...").first()
         }
+        
+        # Creating UserList entries
+        user_lists = [
+            UserList(user=users["Nicole"], book=books["A Prince's Endless Indulgence"], rating=5),
+            UserList(user=users["James"], book=books["The Tycoon's Fierce Pampering of His Wife"], rating=4),
+            UserList(user=users["Tammy"], book=books["Pampered Poisonous Royal Wife"], rating=5),
+            UserList(user=users["Nayla"], book=books["She Became The Boss's Lady After Divorce"], rating=4),
+            UserList(user=users["Jones"], book=books["Reborn in the Seventies: Pampered Wife..."], rating=3),
+            UserList(user=users["Funnyface"], book=books["The wealthy stepmom became wildly popular..."], rating=4),
+            UserList(user=users["Luvreading04"], book=books["A Prince's Endless Indulgence"], rating=5),
+            UserList(user=users["benji"], book=books["The Humble Family's Daughter Has A Spatial Pocket!"], rating=4),
+            UserList(user=users["Grace"], book=books["Pampered Poisonous Royal Wife"], rating=5),
+            UserList(user=users["Dora"], book=books["She Became The Boss's Lady After Divorce"], rating=4)
+        ]
+        
+        # Adding user lists to the session
+        db.session.bulk_save_objects(user_lists)
+        db.session.commit()
 
-        # Create user lists with ratings for specific users and books
-        user_lists = []
-        for user_id, book_id, rating in [
-            ("Nicole", "A Prince's Endless Indulgence", 5),
-            ("James", "The Tycoon's Fierce Pampering of His Wife", 4),
-            ("Tammy", "Pampered Poisonous Royal Wife", 3),
-            ("Nayla", "A Prince's Endless Indulgence", 5),
-            ("Jones", "The Tycoon's Fierce Pampering of His Wife", 5),
-            ("Funnyface", "The wealthy stepmom became wildly popular...", 4),
-            ("benji", "She Became The Boss's Lady After Divorce", 4),
-            ("Dora", "The Humble Family's Daughter Has A Spatial Pocket!", 5)
-        ]:
-            user = users.get(user_id)
-            book = books.get(book_id)
-            
-            if user is None:
-                print(f"User '{user_id}' not found!")
-            elif book is None:
-                print(f"Book '{book_id}' not found!")
-            else:
-                # If both user and book are valid, create the UserList
-                user_lists.append(UserList(user_id=user.id, book_id=book.id, rating=rating))
-
-        if user_lists:
-            db.session.add_all(user_lists)
-            db.session.commit()
-        else:
-            print("No valid UserLists to add.")
+        print("User lists have been created.")
 
 def read_books():
     with app.app_context():
@@ -242,23 +233,6 @@ def delete_user_lists():
     with app.app_context():
         UserList.query.delete()
         db.session.commit()
-
-
-def update_book(book_id, **kwargs):
-    with app.app_context():
-        book = Book.query.get(book_id)
-        if book:
-            for key, value in kwargs.items():
-                setattr(book, key, value)
-            db.session.commit()
-
-def update_author(author_id, **kwargs):
-    with app.app_context():
-        author = Author.query.get(author_id)
-        if author:
-            for key, value in kwargs.items():
-                setattr(author, key, value)
-            db.session.commit()
 
 if __name__ == '__main__':# Clear the books table
     create_users()

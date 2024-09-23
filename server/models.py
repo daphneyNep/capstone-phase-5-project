@@ -1,11 +1,8 @@
 from sqlalchemy import ForeignKey
-from sqlalchemy_serializer import SerializerMixin
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import validates, relationship
 from sqlalchemy_serializer import SerializerMixin
-
-
-from config import db
+from config import db  # Use the db from your config
 
 # Association table for the many-to-many relationship between UserLists and Books
 userlist_books = db.Table('userlist_books',
@@ -28,6 +25,9 @@ class Book(db.Model, SerializerMixin):
     comments = relationship('Comment', back_populates='book', cascade="all, delete-orphan")
     userlists = relationship('UserList', secondary=userlist_books, back_populates='books')
 
+    # Association proxy to access user names through userlists
+    user_names = association_proxy('userlists', 'user.username')
+
     # Fields to serialize
     serialize_rules = ('-author.books', '-comments.book', '-userlists.books')  # Avoid recursion
 
@@ -39,11 +39,10 @@ class Author(db.Model, SerializerMixin):
     __tablename__ = 'authors'
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String )
-    genre = db.Column(db.String )
+    name = db.Column(db.String, nullable=False)  # Ensuring name is not null
+    genre = db.Column(db.String)
     bio = db.Column(db.Text)
     image_url = db.Column(db.String)  # Field for image URL
-
 
     # One-to-Many relationship: An author has many books
     books = relationship('Book', back_populates='author')
@@ -51,23 +50,23 @@ class Author(db.Model, SerializerMixin):
     # Fields to serialize
     serialize_rules = ('-books.author',)  # Exclude recursive serialization of book
 
-
-
+    def __repr__(self):
+        return f'<Author {self.id}, {self.name}, {self.genre}, {self.bio} >'
 
 
 class User(db.Model, SerializerMixin):
     __tablename__ = 'users'
 
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String, nullable=False)
-    password = db.Column(db.String, nullable=False)
+    username = db.Column(db.String, nullable=False)  # Ensuring username is not null
+    password = db.Column(db.String, nullable=False)  # Ensuring password is not null
 
     # One-to-Many: A user can have many comments and userlists
     comments = relationship('Comment', back_populates='user', cascade="all, delete-orphan")
     userlists = relationship('UserList', back_populates='user', cascade="all, delete-orphan")
 
     # Fields to serialize
-    serialize_rules = ('-comments.user', '-userlists.user')  # Avoid recursion in comments
+    serialize_rules = ('-comments.user', '-userlists.user')
 
     def __repr__(self):
         return f'<User {self.id}, {self.username}, {self.password}>'
@@ -97,14 +96,15 @@ class UserList(db.Model, SerializerMixin):
 
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    book_id = db.Column(db.Integer, db.ForeignKey('books.id'), nullable=False)
     rating = db.Column(db.Integer, nullable=False)
 
-
     books = relationship('Book', secondary=userlist_books, back_populates='userlists')
-    
+
     # Relationship with User (the user that owns this list)
     user = db.relationship('User', back_populates='userlists')
+
+    # Association proxy to access book titles through userlists
+    book_titles = association_proxy('books', 'title')
 
     # Fields to serialize
     serialize_rules = ('-books.userLists', '-user.userlists')  # Avoid recursion
@@ -116,7 +116,7 @@ class UserList(db.Model, SerializerMixin):
         return value
 
     def __repr__(self):
-        return f'<UserList user_id={self.user_id}, book_id={self.book_id}, rating={self.rating}>'
+        return f'<UserList user_id={self.user_id}, rating={self.rating}>'
 
 
 
