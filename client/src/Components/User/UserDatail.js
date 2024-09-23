@@ -1,45 +1,75 @@
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import React from "react";
 
 function UserDetail() {
-	const [user, setUser] = useState({});
-	const navigate = useNavigate(); // Initialize navigate
+    const [user, setUser] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const { id } = useParams();
+    const navigate = useNavigate();
 
-	const { id } = useParams();
+    useEffect(() => {
+        const token = localStorage.getItem("authToken");
 
-	useEffect(() => {
-		fetch(`http://127.0.0.1:5555/user/${id}`)
-			.then(res => {
-				if (res.ok) {
-					return res.json();
-				} else {
-					throw new Error("Failed to fetch");
-				}
-			})
-			.then(data => setUser(data))
-			.catch(() => navigate("/not-found")); // Redirect to /not-found on error
-	}, [id, navigate]); // Added navigate to dependency array
+        if (!token) {
+            navigate("/login");
+            return;
+        }
 
-	const { user_id, username, password, all_users = [] } = user;
+        fetch(`http://127.0.0.1:5555/user/${id}`, {
+            method: "GET",
+            headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json"
+            },
+        })
+            .then((res) => {
+                if (!res.ok) {
+                    if (res.status === 401) {
+                        throw new Error("Unauthorized access. Please login.");
+                    }
+                    throw new Error("Failed to fetch user data");
+                }
+                return res.json();
+            })
+            .then((data) => {
+                setUser(data);
+                setLoading(false);
+            })
+            .catch((err) => {
+                setError(err.message || "User not found");
+                setLoading(false);
+            });
+    }, [id, navigate]);
 
-	
-	return (
-        <div className= "userList-detail" id={id}>
-            <p>{user_id}</p>
-            <p>{username}</p>
-            <p>{password}</p>
+    const logout = () => {
+        localStorage.removeItem("authToken");
+        navigate("/login");
+    };
 
-            <div className= "userList-card">
-                <section>
-				<p>{book_id}</p>
-				<p>{user_id}</p>
-                    <p>Rating:</p>
-                    <pre>{rating}</pre>
-            </section>
-            </div>
-		</div>
-	)
+    if (loading) {
+        return <p>Loading...</p>;
+    }
 
+    if (error) {
+        return <p>{error}</p>;
+    }
+
+    if (!user) {
+        return <p>No user data available</p>;
+    }
+
+    const { username, password } = user;
+
+    return (
+        <div className="user-detail" id={id}>
+            <h1>{username}</h1>
+            <h1>{password}</h1>
+            <div className="user-card"></div>
+            <button onClick={logout}>Logout</button> {/* Logout button */}
+        </div>
+    );
 }
-export default UserDetail
+
+export default UserDetail;

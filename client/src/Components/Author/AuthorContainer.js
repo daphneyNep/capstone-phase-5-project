@@ -4,11 +4,11 @@ import AuthorCard from "./AuthorCard";
 function AuthorContainer({ authors, onDeleteAuthor }) {
     return (
         <section>
-            <ul className='cards'>
+            <ul className="cards">
                 {authors.map(author => (
                     <AuthorCard 
-                        key={authors.id} 
-                        author={authors} 
+                        key={author.id}  // Use author.id instead of authors.id
+                        author={author}  // Pass the current author, not the whole authors array
                         onDeleteAuthor={onDeleteAuthor} 
                     />
                 ))}

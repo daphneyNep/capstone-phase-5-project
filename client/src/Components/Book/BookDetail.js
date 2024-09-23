@@ -1,5 +1,6 @@
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import React from "react";
 
 function BookDetail() {
 	const [book, setBook] = useState({});
@@ -43,7 +44,7 @@ function BookDetail() {
             
 			<div className="book-card">
 				<figure className="image">
-					<img src={image_url} alt={name} />
+					<img src={image_url} alt={title} /> {/* Use title instead of name */}
 					<section>
 						<p>{book_id}</p>
 						<p>{title}</p>
@@ -60,11 +61,11 @@ function BookDetail() {
 								<img
 									width={"100px"}
 									src={s.image}
-									alt={s.name}
+									alt={s.title}  // Assuming s.title is the correct field for the book title
 								/>
 								<div className="s-user">
 									<Link to={`/authors/${author_id}`}>
-										<p style={{ fontStyle: "italic" }}>{author_id.name}</p>
+										<p style={{ fontStyle: "italic" }}>{s.author_name}</p> {/* Use the correct property */}
 									</Link>
 								</div>
 							</li>

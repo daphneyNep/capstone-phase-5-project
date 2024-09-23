@@ -1,8 +1,8 @@
-import React from "react"
+import React from "react";
 
-const AuthorCard = ({ author: { author_name, author_genre, bio }, deleteBook }) => {
+const AuthorCard = ({ author: { id, author_name, author_genre, bio }, deleteBook }) => { // Destructure 'id' from 'author'
   const handleDelete = () => {
-    deleteBook(id);
+    deleteBook(id); // Use the 'id' here
   };
 
   return (
@@ -15,4 +15,4 @@ const AuthorCard = ({ author: { author_name, author_genre, bio }, deleteBook }) 
   );
 };
 
-export default AuthorCard
+export default AuthorCard;

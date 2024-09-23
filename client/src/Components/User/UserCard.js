@@ -1,8 +1,8 @@
 import React from "react"
 
-const BookCard = ({ book: { id, userName, password }, deleteBook }) => {
+const UserCard = ({ user: { id, userName, password }, deleteUser }) => {
   const handleDelete = () => {
-    deleteBook(id);
+    deleteUser(id);
   };
 
   return (
@@ -14,4 +14,4 @@ const BookCard = ({ book: { id, userName, password }, deleteBook }) => {
   );
 };
 
-export default BookCard
+export default UserCard

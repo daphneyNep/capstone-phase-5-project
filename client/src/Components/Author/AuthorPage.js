@@ -1,9 +1,15 @@
 import React from 'react';
-import AuthorContainer from './AuthorContainer'; // Make sure this import matches the filename
+import AuthorContainer from './AuthorContainer'; // Ensure this import matches the filename
 
 function AuthorPage({ authors }) {
   return (
-    <AuthorContainer author={authors} />
+    <div>
+      {authors && authors.length > 0 ? (
+        <AuthorContainer authors={authors} /> // Pass authors as an array
+      ) : (
+        <p>No authors available.</p> // Fallback message if there are no authors
+      )}
+    </div>
   );
 }
 

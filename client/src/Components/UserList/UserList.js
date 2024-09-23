@@ -10,7 +10,7 @@ function UserListContainer({ user_id, book_id, rating, onDeleteUserList}) {
                         key={user_id} 
                         book_id={book_id} 
                         rating={rating}
-                        onDeleteUser={onDeleteUserList} 
+                        onDeleteUserList={onDeleteUserList} 
                     />
                 ))}
             </ul>

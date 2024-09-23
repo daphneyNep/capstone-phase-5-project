@@ -1,9 +1,15 @@
 import React from 'react';
-import BookContainer from './BookContainer'; // Make sure this import matches the filename
+import BookContainer from './BookContainer'; // Ensure this matches the actual file name
 
 function BookPage({ books }) {
   return (
-    <BookContainer books={books} />
+    <div>
+      {books && books.length > 0 ? (
+        <BookContainer books={books} />
+      ) : (
+        <p>No books available</p> // Render fallback if books are not present
+      )}
+    </div>
   );
 }
 

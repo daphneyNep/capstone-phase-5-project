@@ -8,24 +8,23 @@ function AuthorForm() {
 
     // Create schema for form validation
     const schema = yup.object().shape({
-        author_name: yup.string().required("Book Name is required"),
-        author_genre: yup.number().required("Author Genre is required"), 
-        bio: yup.content().required("Bio is required"),
-        image_url: yup.string().required("Image URL is required")
+        name: yup.string().required("Name is required"),
+        genre: yup.string().required("Genre is required"), // Changed to yup.string()
+        bio: yup.string().required("Bio is required"),
+        image_url: yup.string().required("Image URL is required"),
     });
 
     // Create useFormik hook
     const formik = useFormik({
         initialValues: {
-            book_name: '',
-            author_genre: '',
-            bio:'',
+            name: '',
+            genre: '',
+            bio: '',
             image_url: '',
         },
-
         validationSchema: schema,
         onSubmit: (values) => {
-            console.log("Submitting author data:", values);  // Debug statement
+            console.log("Submitting author data:", values);
             fetch("http://127.0.0.1:5555/author", {
                 method: "POST",
                 body: JSON.stringify(values),
@@ -35,15 +34,15 @@ function AuthorForm() {
                 if (res.ok) {
                     return res.json();
                 } else {
-                    console.error("Something went wrong with POST request");
-                    throw new Error("Failed to create book");
+                    throw new Error("Failed to create author");
                 }
             })
             .then(data => {
-                navigate(`/book/${data.id}`);
+                navigate(`/author/${data.id}`); // Corrected to navigate to author page
             })
             .catch(error => {
                 console.error(error.message);
+                // Optionally, you could set an error state here to inform the user
             });
         }
     });
@@ -51,9 +50,10 @@ function AuthorForm() {
     return (
         <section>
             <form onSubmit={formik.handleSubmit} className="form">
-                <label>Author_Name</label>
+                <label htmlFor="name">Name</label>
                 <input
                     type="text"
+                    id="name"
                     name="name"
                     onChange={formik.handleChange}
                     value={formik.values.name}
@@ -62,20 +62,22 @@ function AuthorForm() {
                     <h3 style={{ color: "red" }}>{formik.errors.name}</h3>
                 )}
 
-                <label>Author_genre</label>
+                <label htmlFor="genre">Genre</label>
                 <input
                     type="text"
-                    name="author_genre"
+                    id="genre"
+                    name="genre"
                     onChange={formik.handleChange}
-                    value={formik.values.author_genre}
+                    value={formik.values.genre}
                 />
-                {formik.errors.author_genre && formik.touched.author_genre && (
-                    <h3 style={{ color: "red" }}>{formik.errors.author_genre}</h3>
+                {formik.errors.genre && formik.touched.genre && (
+                    <h3 style={{ color: "red" }}>{formik.errors.genre}</h3>
                 )}
 
-                <label>Bio</label>
+                <label htmlFor="bio">Bio</label>
                 <input
                     type="text"
+                    id="bio"
                     name="bio"
                     onChange={formik.handleChange}
                     value={formik.values.bio}
@@ -84,10 +86,10 @@ function AuthorForm() {
                     <h3 style={{ color: "red" }}>{formik.errors.bio}</h3>
                 )}
 
-
-                <label>Image_url</label>
+                <label htmlFor="image_url">Image URL</label>
                 <input
                     type="text"
+                    id="image_url"
                     name="image_url"
                     onChange={formik.handleChange}
                     value={formik.values.image_url}

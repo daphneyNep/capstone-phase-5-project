@@ -1,8 +1,8 @@
 import React from "react"
 
-const UserListCard = ({ userList: { book_id, rating, user_id }, deleteBook }) => {
+const UserListCard = ({ userList: { book_id, rating, user_id }, deleteUserList }) => {
   const handleDelete = () => {
-    deleteBook(id);
+    deleteUserList(id);
   };
 
   return (
@@ -15,4 +15,4 @@ const UserListCard = ({ userList: { book_id, rating, user_id }, deleteBook }) =>
   );
 };
 
-export default BookCard
+export default UserListCard;

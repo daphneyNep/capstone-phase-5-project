@@ -9,7 +9,7 @@ function BookContainer({ books, onDeleteBook }) {
                     <BookCard 
                         key={book.id} 
                         book={book} 
-                        onDeleteBook={onDeleteBook} 
+                        onDeleteBook={onDeleteBook} // Correct prop name
                     />
                 ))}
             </ul>

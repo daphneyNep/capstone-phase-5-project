@@ -1,20 +1,20 @@
-import React from "react";
+import React, { useState } from "react"; // Import useState
+
 function Search({ searchAuthor, searchBook }) {
     const [form, setForm] = useState('');
 
-    
     const handleChange = (e) => {
         setForm(e.target.value);
     };
 
-    
     const handleSubmit = (e) => {
         e.preventDefault();
         if (form.trim()) {
-            
+            // Call searchAuthor if it's defined
             if (searchAuthor) {
                 searchAuthor(form);
             }
+            // Call searchBook if it's defined
             if (searchBook) {
                 searchBook(form);
             }

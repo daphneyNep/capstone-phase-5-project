@@ -1,4 +1,5 @@
 import CommentCard from "./CommentCard";
+import React from "react";
 
 function CommentContainer({ comment }) {
     return (

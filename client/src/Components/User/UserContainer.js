@@ -7,7 +7,7 @@ function UserContainer({ users, onDeleteUser }) {
             <ul className='cards'>
                 {users.map(user => (
                     <UserCard 
-                        key={id} 
+                        key={user.id}  // Use user.id here
                         user={user} 
                         onDeleteUser={onDeleteUser} 
                     />
