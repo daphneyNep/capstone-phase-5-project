@@ -27,11 +27,9 @@ function NavBar() {
           <Link to="/author/new">Add New Author</Link>
         </li>
         <li>
-          <Link to="/book/new">Add New Book</Link>
+          <Link to="/book/new">Add New Book,</Link>
         </li>
-        <li>
-          <Link to="/comment/new">Add New Comment</Link>
-        </li>
+        
       </ul>
     </nav>
   );

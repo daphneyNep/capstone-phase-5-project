@@ -75,14 +75,14 @@ function CommentDetail() {
         return <p>No comment found.</p>;
     }
 
-    const { id, content, author_id, book_id, user_id, created_at, updated_at } = comment;
+    const { id, content, author_id, book_id, user_id, image_url, created_at, updated_at } = comment;
 
     return (
         <div className="comment-detail" id={id}>
             <p>{content}</p>
             <div className="comment-card">
                 <figure className="image_url">
-                    <img src="default-image.jpg" alt="Comment" /> {/* Fallback image */}
+                    <img src={image_url || "default-image.jpg"} alt="Comment" /> {/* Use image_url if available */}
                     <section>
                         <p>Author: {author_id}</p>
                         <p>User: {user_id}</p>
@@ -99,8 +99,8 @@ function CommentDetail() {
                             <li key={c.id}>
                                 <img
                                     width="100px"
-                                    src="default-image.jpg" // Fallback image
-                                    alt="Book"
+                                    src={c.image_url || "default-image.jpg"} // Use comment image_url if available
+                                    alt="Comment"
                                 />
                                 <div className="book-user">
                                     <Link to={`/comment/${c.author_id}`}>

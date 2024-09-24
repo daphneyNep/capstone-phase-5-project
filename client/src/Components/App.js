@@ -1,22 +1,48 @@
 import React, { useEffect, useState } from "react";
-import { Route, Routes } from "react-router-dom"; 
+import { Route, Routes } from "react-router-dom";
 
 import Home from "./Home";
 import AuthorForm from "./Author/AuthorForm";
 import AuthorContainer from "./Author/AuthorContainer";
 import AuthorDetail from "./Author/AuthorDetail";
+import CommentPage from "./Comment/CommentPage";
 import BookContainer from "./Book/BookContainer";
-import BookForm from "./Book/BookForm"; 
+import BookForm from "./Book/BookForm";
 import BookDetail from "./Book/BookDetail";
+import BookPage from "./Book/BookPage"; // <-- Make sure this line is added
 import UserContainer from "./User/UserContainer";
 import UserForm from "./User/UserForm";
 import UserDetail from "./User/UserDetail";
-import CommentContainer from "./Comment/CommentContainer"; 
+import CommentContainer from "./Comment/CommentContainer";
 import CommentForm from "./Comment/CommentForm";
 import CommentDetail from "./Comment/CommentDetail";
 
 import NavBar from "./NavBar";
 import Header from "./Header";
+
+// Move ErrorBoundary class to the top level
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error("Error caught in ErrorBoundary:", error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return <h1>Something went wrong.</h1>;
+    }
+
+    return this.props.children;
+  }
+}
 
 function App() {
   const [books, setBooks] = useState([]);
@@ -91,34 +117,51 @@ function App() {
   };
 
   const onDeleteComment = (id) => {
-    fetch(`http://127.0.0.1:5555/comment/${id}`, { method: 'DELETE' })
+    console.log(`Attempting to delete comment with ID: ${id}`);
+    fetch(`http://127.0.0.1:5555/comment/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
       .then(response => {
-        if (!response.ok) throw new Error('Failed to delete comment');
+        if (!response.ok) {
+          return response.text().then(text => {
+            throw new Error(`Error: ${response.status} - ${text}`);
+          });
+        }
         setComments(prev => prev.filter(comment => comment.id !== id));
       })
-      .catch(error => console.error('Error:', error));
+      .catch(error => {
+        console.error('Error while deleting comment:', error);
+        alert('Failed to delete comment. Please try again later.');
+      });
   };
 
   return (
-    <div className="App">
-      <Header />
-      <NavBar />
-      <Routes>
-        <Route path="/author/new" element={<AuthorForm addAuthor={addAuthor} />} />
-        <Route path="/authors" element={<AuthorContainer authors={authors} onDeleteAuthor={onDeleteAuthor} />} />
-        <Route path="/authors/:id" element={<AuthorDetail />} />
-        <Route path="/book/new" element={<BookForm addBook={addBook} />} />
-        <Route path="/books" element={<BookContainer books={books} onDeleteBook={onDeleteBook} />} />
-        <Route path="/books/:id" element={<BookDetail />} />
-        <Route path="/user/new" element={<UserForm addUser={addUser} />} />
-        <Route path="/users" element={<UserContainer users={users} onDeleteUser={onDeleteUser} />} />
-        <Route path="/user/:id" element={<UserDetail />} />
-        <Route path="/comment/new" element={<CommentForm addComment={addComment} />} />
-        <Route path="/comments" element={<CommentContainer comments={comments} onDeleteComment={onDeleteComment} />} />
-        <Route path="/comments/:id" element={<CommentDetail />} />
-        <Route path="/" element={<Home />} />
-      </Routes>
-    </div>
+    <ErrorBoundary> {/* Wrap your application in ErrorBoundary */}
+      <div className="App">
+        <Header />
+        <NavBar />
+        <Routes>
+          <Route path="/author/new" element={<AuthorForm addAuthor={addAuthor} />} />
+          <Route path="/authors" element={<AuthorContainer authors={authors} onDeleteAuthor={onDeleteAuthor} />} />
+          <Route path="/author/:id" element={<AuthorDetail />} />
+          <Route path="/book/new" element={<BookForm addBook={addBook} />} />
+          <Route path="/book/:id" element={<BookDetail />} />
+          <Route path="/books/:bookid" element={<BookPage />} />
+          <Route path="/books/:bookid/comments" element={<CommentPage comments={comments} />} />
+          <Route path="/books" element={<BookContainer books={books} onDeleteBook={onDeleteBook} addComment={addComment} comments={comments} />} />
+          <Route path="/user/new" element={<UserForm addUser={addUser} />} />
+          <Route path="/users" element={<UserContainer users={users} onDeleteUser={onDeleteUser} />} />
+          <Route path="/user/:id" element={<UserDetail />} />
+          <Route path="/comment/new" element={<CommentForm addComment={addComment} />} />
+          <Route path="/comments" element={<CommentContainer comments={comments} onDeleteComment={onDeleteComment} />} />
+          <Route path="/comment/:id" element={<CommentDetail />} />
+          <Route path="/" element={<Home />} />
+        </Routes>
+      </div>
+    </ErrorBoundary>
   );
 }
 

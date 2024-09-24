@@ -10,6 +10,7 @@ function CommentForm() {
         content: yup.string().required("Required"),
         book_id: yup.string().required("Required"),
         user_id: yup.string().required("Required"),
+        image_url: yup.string().required("Required").url("Must be a valid URL"),
         created_at: yup.string().required("Required"),
         updated_at: yup.string().required("Required"),
     });
@@ -19,6 +20,7 @@ function CommentForm() {
             content: "",
             book_id: "",
             user_id: "",
+            image_url: "",
             created_at: "",
             updated_at: "",
         },
@@ -53,7 +55,7 @@ function CommentForm() {
 
     return (
         <section>
-        <form onSubmit={formik.handleSubmit}         className="form">
+            <form onSubmit={formik.handleSubmit} className="form">
                 <label htmlFor="content">Comment</label>
                 <input
                     type="text"
@@ -67,9 +69,9 @@ function CommentForm() {
                     <p style={{ color: "red" }}>{formik.errors.content}</p>
                 ) : null}
 
-                <label htmlFor="Book">Book</label>
+                <label htmlFor="book_id">Book ID</label>
                 <input
-                    type="integer"
+                    type="number" // Use type="number" for IDs
                     id="book_id"
                     name="book_id"
                     value={formik.values.book_id}
@@ -80,9 +82,9 @@ function CommentForm() {
                     <p style={{ color: "red" }}>{formik.errors.book_id}</p>
                 ) : null}
 
-                <label htmlFor="User">User</label>
+                <label htmlFor="user_id">User ID</label>
                 <input
-                    type="integer"
+                    type="number" // Use type="number" for IDs
                     id="user_id"
                     name="user_id"
                     value={formik.values.user_id}
@@ -93,7 +95,20 @@ function CommentForm() {
                     <p style={{ color: "red" }}>{formik.errors.user_id}</p>
                 ) : null}
 
-                <label htmlFor="created">Created at</label>
+                <label htmlFor="image_url">Image URL</label>
+                <input
+                    type="url" // Use type="url" for the image URL input
+                    id="image_url"
+                    name="image_url"
+                    value={formik.values.image_url}
+                    onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
+                />
+                {formik.touched.image_url && formik.errors.image_url ? (
+                    <p style={{ color: "red" }}>{formik.errors.image_url}</p>
+                ) : null}
+
+                <label htmlFor="created_at">Created At</label>
                 <input
                     type="text"
                     id="created_at"
@@ -106,7 +121,7 @@ function CommentForm() {
                     <p style={{ color: "red" }}>{formik.errors.created_at}</p>
                 ) : null}
 
-                <label htmlFor="updated">Updated at</label>
+                <label htmlFor="updated_at">Updated At</label>
                 <input
                     type="text"
                     id="updated_at"
