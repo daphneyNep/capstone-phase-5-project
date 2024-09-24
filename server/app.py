@@ -10,12 +10,6 @@ from sqlalchemy.exc import SQLAlchemyError
 
 
 
-app = Flask(__name__)
-CORS(app)
-
-db = SQLAlchemy()
-migrate = Migrate()
-
 logging.basicConfig(level=logging.INFO)
 
 @app.route('/')
@@ -221,12 +215,10 @@ def userlist_by_id(id):
         db.session.commit()
         return jsonify({'message': 'UserList deleted successfully'}), 200
     
-@app.route('/comments/<int:comment_id>', methods=['GET'])
-def get_comment(comment_id):
-    comment = Comment.query.get(comment_id)
-    if not comment:
-        return {'message': 'Comment not found'}, 404
-    return jsonify(comment.to_dict()), 200
+@app.route('/comment', methods=['GET'])
+def get_comments():
+    comments = Comment.query.all()
+    return jsonify([comment.to_dict() for comment in comments])
 
 @app.route('/test', methods=['GET'])
 def test():
@@ -234,16 +226,17 @@ def test():
 
 @app.route('/comments', methods=['POST'])
 def create_comment():
-    data = request.get_json()  # Parse JSON data
-    if data is None:
-        return {'message': 'Invalid JSON data'}, 400
+    data = request.get_json()
+    if not data:
+        return {'message': 'Invalid JSON data, ensure Content-Type is application/json'}, 400
 
     content = data.get('content')
     book_id = data.get('book_id')
     user_id = data.get('user_id')
 
     if not content or not book_id or not user_id:
-        return {'message': 'Missing required fields'}, 400
+        return {'message': 'Missing required fields: content, book_id, user_id'}, 400
+
     try:
         comment = Comment(content=content, book_id=book_id, user_id=user_id)
         db.session.add(comment)
@@ -251,14 +244,18 @@ def create_comment():
         return jsonify(comment.to_dict()), 201
     except Exception as e:
         db.session.rollback()
-        return {'message': str(e)}, 400
+        return {'message': 'Failed to create comment: ' + str(e)}, 400
 
 @app.route('/comments/<int:comment_id>', methods=['PUT'])
 def update_comment(comment_id):
     comment = Comment.query.get(comment_id)
     if not comment:
         return {'message': 'Comment not found'}, 404
+    
     data = request.get_json()
+    if not data:
+        return {'message': 'Invalid JSON data, ensure Content-Type is application/json'}, 400
+    
     content = data.get('content')
 
     if content:
@@ -269,7 +266,7 @@ def update_comment(comment_id):
         return jsonify(comment.to_dict()), 200
     except Exception as e:
         db.session.rollback()
-        return {'message': str(e)}, 400
+        return {'message': 'Failed to update comment: ' + str(e)}, 400
 
 @app.route('/comments/<int:comment_id>', methods=['DELETE'])
 def delete_comment(comment_id):
@@ -279,10 +276,10 @@ def delete_comment(comment_id):
     try:
         db.session.delete(comment)
         db.session.commit()
-        return {'message': 'Comment deleted'}, 200  # Return 200 for successful deletion with a message
+        return {'message': 'Comment deleted'}, 200
     except Exception as e:
         db.session.rollback()
-        return {'message': str(e)}, 400
+        return {'message': 'Failed to delete comment: ' + str(e)}, 400
 
 if __name__ == '__main__':
     app.run(port=5555, debug=True)
