@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, make_response
 from config import app, db
 from models import Author, Book, Comment, User, UserList
 from flask_cors import CORS
@@ -11,6 +11,8 @@ from sqlalchemy.exc import SQLAlchemyError
 
 
 logging.basicConfig(level=logging.INFO)
+
+CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}})
 
 @app.route('/')
 def index():
@@ -217,7 +219,7 @@ def userlist_by_id(id):
     
 @app.route('/comment', methods=['GET'])
 def get_comments():
-    comments = Comment.query.all()
+    comments = Comment.query.all()  # Replace with your logic to fetch comments
     return jsonify([comment.to_dict() for comment in comments])
 
 @app.route('/test', methods=['GET'])
@@ -268,18 +270,23 @@ def update_comment(comment_id):
         db.session.rollback()
         return {'message': 'Failed to update comment: ' + str(e)}, 400
 
-@app.route('/comments/<int:comment_id>', methods=['DELETE'])
-def delete_comment(comment_id):
-    comment = Comment.query.get(comment_id)
-    if not comment:
-        return {'message': 'Comment not found'}, 404
-    try:
-        db.session.delete(comment)
-        db.session.commit()
-        return {'message': 'Comment deleted'}, 200
-    except Exception as e:
-        db.session.rollback()
-        return {'message': 'Failed to delete comment: ' + str(e)}, 400
+@app.route('/comment/<int:id>', methods=['DELETE'])
+def delete_comment(id):
+    comment = Comment.query.get_or_404(id)
+    db.session.delete(comment)
+    db.session.commit()
+    return jsonify({'message': 'Comment deleted successfully'}), 200
+
+@app.route('/set-cookie')
+def set_cookie():
+    response = make_response("Cookie is set")
+    response.set_cookie(
+        'your_cookie', 
+        'value', 
+        secure=True,         # Ensures the cookie is sent only over HTTPS
+        samesite='None'     # Allows cross-site usage
+    )
+    return response
 
 if __name__ == '__main__':
     app.run(port=5555, debug=True)

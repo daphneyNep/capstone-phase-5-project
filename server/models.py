@@ -15,7 +15,7 @@ class Book(db.Model, SerializerMixin):
     __tablename__ = 'books'
 
     id = db.Column(db.Integer, primary_key=True)
-    author_id = db.Column(db.Integer, ForeignKey('authors.id'))
+    author_id = db.Column(db.Integer, db.ForeignKey('authors.id'))
     title = db.Column(db.String, nullable=False)
     summary = db.Column(db.String, nullable=False)
     image_url = db.Column(db.String, nullable=True)
@@ -79,6 +79,7 @@ class Comment(db.Model, SerializerMixin):
     content = db.Column(db.String, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     book_id = db.Column(db.Integer, db.ForeignKey('books.id'), nullable=True)
+    image_url = db.Column(db.String, nullable=True)
 
     # Relationships
     book = db.relationship('Book', back_populates='comments')
@@ -88,7 +89,7 @@ class Comment(db.Model, SerializerMixin):
     serialize_rules = ('-book.comments', '-user.comments')  # Avoid recursion in book and user
 
     def __repr__(self):
-        return f'<Comment {self.id}, {self.content}, {self.book_id}, {self.user_id}>'
+        return f'<Comment {self.id}, {self.content}, {self.book_id}, {self.user_id}, {self.image_url}>'
 
 
 class UserList(db.Model, SerializerMixin):
