@@ -1,8 +1,8 @@
 import React from "react";
 
-const AuthorCard = ({ author: { id, author_name, author_genre, bio }, deleteBook }) => { // Destructure 'id' from 'author'
+const AuthorCard = ({ author: { id, author_name, author_genre, bio }, deleteAuthor }) => { // Destructure 'id' from 'author'
   const handleDelete = () => {
-    deleteBook(id); // Use the 'id' here
+    deleteAuthor(id); // Use the 'id' here
   };
 
   return (

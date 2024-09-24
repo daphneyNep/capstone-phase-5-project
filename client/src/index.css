@@ -5,3 +5,40 @@
   --text: hsla(0, 0%, 100%, 0.88);
 }
 
+
+/* General styles */
+body {
+  font-family: 'Roboto', sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f4f4f4;
+  color: var(--text);
+}
+
+/* Centered Container */
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 20px;
+}
+
+.App.light {
+  background-color: darkslategrey;
+  color: #000;
+}
+
+.App.light h1, .App.light h2, .App.light h3 {
+  color: #000;
+}
+
+.App.light .button {
+  background-color: var(--primary-color);
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}

@@ -5,8 +5,6 @@ import React from "react";
 
 function Home() {
     const [books, setBooks] = useState([]);
-    const [authors, setAuthors] = useState([]);
-    const [users, setUsers] = useState([]);
     const [error, setError] = useState(null);
 
     useEffect(() => {

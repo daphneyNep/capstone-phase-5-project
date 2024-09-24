@@ -8,7 +8,6 @@ function CommentForm() {
 
     const schema = yup.object().shape({
         content: yup.string().required("Required"),
-        author_id: yup.string().required("Required"),
         book_id: yup.string().required("Required"),
         user_id: yup.string().required("Required"),
         created_at: yup.string().required("Required"),
@@ -18,7 +17,6 @@ function CommentForm() {
     const formik = useFormik({
         initialValues: {
             content: "",
-            author_id: "",
             book_id: "",
             user_id: "",
             created_at: "",
@@ -69,35 +67,22 @@ function CommentForm() {
                     <p style={{ color: "red" }}>{formik.errors.content}</p>
                 ) : null}
 
-                <label htmlFor="author">Author</label>
+                <label htmlFor="Book">Book</label>
                 <input
-                    type="text"
-                    id="author"
-                    name="author"
-                    value={formik.values.author_id}
+                    type="integer"
+                    id="book_id"
+                    name="book_id"
+                    value={formik.values.book_id}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
                 />
-                {formik.touched.author_id && formik.errors.author_id ? (
-                    <p style={{ color: "red" }}>{formik.errors.author_id}</p>
-                ) : null}
-
-                <label htmlFor="song">Song</label>
-                <input
-                    type="text"
-                    id="song_id"
-                    name="song_id"
-                    value={formik.values.song_id}
-                    onChange={formik.handleChange}
-                    onBlur={formik.handleBlur}
-                />
-                {formik.touched.song_id && formik.errors.song_id ? (
-                    <p style={{ color: "red" }}>{formik.errors.song_id}</p>
+                {formik.touched.book_id && formik.errors.book_id ? (
+                    <p style={{ color: "red" }}>{formik.errors.book_id}</p>
                 ) : null}
 
                 <label htmlFor="User">User</label>
                 <input
-                    type="text"
+                    type="integer"
                     id="user_id"
                     name="user_id"
                     value={formik.values.user_id}
@@ -106,19 +91,6 @@ function CommentForm() {
                 />
                 {formik.touched.user_id && formik.errors.user_id ? (
                     <p style={{ color: "red" }}>{formik.errors.user_id}</p>
-                ) : null}
-
-                <label htmlFor="bio">Bio</label>
-                <input
-                    type="text"
-                    id="bio"
-                    name="bio"
-                    value={formik.values.bio}
-                    onChange={formik.handleChange}
-                    onBlur={formik.handleBlur}
-                />
-                {formik.touched.bio && formik.errors.biography ? (
-                    <p style={{ color: "red" }}>{formik.errors.bio}</p>
                 ) : null}
 
                 <label htmlFor="created">Created at</label>

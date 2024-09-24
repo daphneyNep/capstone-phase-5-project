@@ -1,19 +1,17 @@
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import React from "react";
 
-
 function CommentDetail() {
+    const { commentId, bookId } = useParams();  // Destructure params to get commentId and bookId
     const [comment, setComment] = useState(null); // Initialize as null
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [newCommentContent, setNewCommentContent] = useState('');
-    const params = useParams();
-    const navigate = useNavigate();
 
     useEffect(() => {
         // Fetch comment details based on ID from URL parameters
-        fetch(`/comments/${params.commentId}`, {
+        fetch(`/comments/${commentId}`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json'
@@ -33,7 +31,7 @@ function CommentDetail() {
             setError(error.message);
             setLoading(false);
         });
-    }, [params.commentId]);
+    }, [commentId]);  // Use commentId from useParams
 
     const handleCreateComment = () => {
         fetch('/comments', {
@@ -43,7 +41,7 @@ function CommentDetail() {
             },
             body: JSON.stringify({
                 content: newCommentContent,
-                book_id: params.bookId, // Assuming you have bookId in params or state
+                book_id: bookId, // Use bookId from useParams
                 user_id: 1 // Replace with the actual user ID
             })
         })
