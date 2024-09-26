@@ -1,22 +1,34 @@
 import React from "react";
+import { Link } from 'react-router-dom';
+import PropTypes from 'prop-types';
 
-const AuthorCard = ({ author: { id, author_name, author_genre, bio, image_url }, deleteAuthor = () => {} }) => {
-  // This will prevent the error, but you should still implement proper logic in the parent.
-  const handleDelete = () => {
-    if (deleteAuthor) {
-      deleteAuthor(id);
-    }
-  };
+const AuthorCard = ({ author, deleteAuthor }) => {
+  console.log('deleteAuthor prop:', deleteAuthor); // Debugging line
 
   return (
-    <li>
-      {image_url && <img src={image_url} alt={`${author_name}'s portrait`} />}
-      <p>{author_name}</p>
-      <p>{author_genre}</p>
-      <p>{bio}</p>
-      <button onClick={handleDelete}>Delete</button>
+    <li className="author-card">
+      {author.image_url && (
+        <img src={author.image_url} alt={`${author.author_name}'s portrait`} />
+      )}
+      <h3>
+        <Link to={`/authors/${author.id}`}>{author.author_name}</Link>
+      </h3>
+      <p>{author.author_genre}</p>
+      <p>{author.bio}</p>
+      <button onClick={() => deleteAuthor(author.id)}>Delete</button>
     </li>
   );
+};
+
+AuthorCard.propTypes = {
+  author: PropTypes.shape({
+    id: PropTypes.number.isRequired,
+    author_name: PropTypes.string.isRequired,
+    author_genre: PropTypes.string.isRequired,
+    bio: PropTypes.string,
+    image_url: PropTypes.string,
+  }).isRequired,
+  deleteAuthor: PropTypes.func.isRequired,
 };
 
 export default AuthorCard;

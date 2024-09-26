@@ -1,52 +1,51 @@
-import React, { useState } from 'react';
-import BookCard from './BookCard';
+import React, { useState } from "react";
+import Search from "./Search"; // Import your Search component
+import BookList from "./BookList"; // Import your BookList component
+import AuthorList from "./AuthorList"; // Import your AuthorList component
 
-const ParentComponent = () => {
-  const [comments, setComments] = useState([
-    { id: 1, bookId: 1, content: "Great book!" },
-    { id: 2, bookId: 1, content: "Very informative." },
-    // More comments...
-  ]);
+function ParentComponent() {
+    const [books, setBooks] = useState([
+        { id: 1, title: "Book 1", author: "Author 1" },
+        { id: 2, title: "Book 2", author: "Author 2" },
+        // Add your book data here
+    ]);
 
-  const [books] = useState([
-    {
-      id: 1,
-      author_id: 101,
-      title: 'Book Title',
-      genre: 'Fiction',
-      summary: 'Book Summary',
-      image_url: 'https://example.com/book-image.jpg'
-    },
-    // More books...
-  ]);
+    const [authors, setAuthors] = useState([
+        { id: 1, name: "Author 1" },
+        { id: 2, name: "Author 2" },
+        // Add your author data here
+    ]);
 
-  const addComment = (bookId, content) => {
-    const newComment = {
-      id: comments.length + 1, // Simple ID generation
-      bookId,
-      content
+    const [filteredBooks, setFilteredBooks] = useState(books);
+    const [filteredAuthors, setFilteredAuthors] = useState(authors);
+
+    // Function to filter books based on the search input
+    const searchBook = (searchTerm) => {
+        const filtered = books.filter((book) =>
+            book.title.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+        setFilteredBooks(filtered);
     };
-    setComments([...comments, newComment]); // Update the comments state
-  };
 
-  const deleteBook = (bookId) => {
-    console.log(`Deleting book with ID: ${bookId}`);
-    // Implement the logic to delete the book (e.g., filtering the books array)
-  };
+    // Function to filter authors based on the search input
+    const searchAuthor = (searchTerm) => {
+        const filtered = authors.filter((author) =>
+            author.name.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+        setFilteredAuthors(filtered);
+    };
 
-  return (
-    <ul>
-      {books.map(book => (
-        <BookCard
-          key={book.id}
-          book={book}
-          deleteBook={deleteBook}
-          addComment={addComment}
-          comments={comments}
-        />
-      ))}
-    </ul>
-  );
-};
+    
+
+    return (
+        <div>
+            {/* Pass down the search functions as props */}
+            <Search searchBook={searchBook} searchAuthor={searchAuthor} />
+            {/* Render the filtered book and author lists */}
+            <BookList books={filteredBooks} />
+            <AuthorList authors={filteredAuthors} />
+        </div>
+    );
+}
 
 export default ParentComponent;

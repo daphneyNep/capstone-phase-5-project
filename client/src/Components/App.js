@@ -16,9 +16,11 @@ import UserDetail from "./User/UserDetail";
 import CommentContainer from "./Comment/CommentContainer";
 import CommentForm from "./Comment/CommentForm";
 import CommentDetail from "./Comment/CommentDetail";
+import LibraryPage from './LibraryPage';
 
 import NavBar from "./NavBar";
 import Header from "./Header";
+import NotFound from "./NotFound"; 
 
 // Move ErrorBoundary class to the top level
 class ErrorBoundary extends React.Component {
@@ -49,6 +51,7 @@ function App() {
   const [authors, setAuthors] = useState([]);
   const [users, setUsers] = useState([]);
   const [comments, setComments] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -89,11 +92,12 @@ function App() {
   const addUser = (user) => setUsers((prev) => [...prev, user]);
   const addComment = (comment) => setComments((prev) => [...prev, comment]);
 
-  const onDeleteAuthor = (id) => {
+  const DeleteAuthor = (id) => {
+    console.log(`Deleting author with id: ${id}`);
     fetch(`http://127.0.0.1:5555/author/${id}`, { method: 'DELETE' })
       .then(response => {
         if (!response.ok) throw new Error('Failed to delete author');
-        setAuthors(prev => prev.filter(author => author.id !== id));
+        setAuthors((prevAuthors) => prevAuthors.filter(author => author.id !== id));
       })
       .catch(error => console.error('Error:', error));
   };
@@ -138,15 +142,36 @@ function App() {
       });
   };
 
+  useEffect(() => {
+    // Fetch data as usual
+  }, []);
+
+  // Filter the books and authors based on the searchTerm
+  const filteredBooks = books.filter(book =>
+    book.title.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const filteredAuthors = authors.filter(author =>
+    author.name.toLowerCase().includes(searchTerm.toLowerCase())
+);
+
   return (
     <ErrorBoundary> {/* Wrap your application in ErrorBoundary */}
       <div className="App">
         <Header />
         <NavBar />
+        {/* Search input */}
+        <input
+          type="text"
+          placeholder="Search books or authors..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
         <Routes>
           <Route path="/author/new" element={<AuthorForm addAuthor={addAuthor} />} />
-          <Route path="/authors" element={<AuthorContainer authors={authors} onDeleteAuthor={onDeleteAuthor} />} />
           <Route path="/author/:id" element={<AuthorDetail />} />
+          <Route path="/authors" element={<AuthorContainer authors={filteredAuthors} deleteAuthor={DeleteAuthor} />} />
+          <Route path="/books" element={<BookContainer books={filteredBooks} onDeleteBook={onDeleteBook} addComment={addComment} comments={comments} />}/>
           <Route path="/book/new" element={<BookForm addBook={addBook} />} />
           <Route path="/book/:id" element={<BookDetail />} />
           <Route path="/books/:bookid" element={<BookPage />} />
@@ -157,6 +182,8 @@ function App() {
           <Route path="/user/:id" element={<UserDetail />} />
           <Route path="/comment/new" element={<CommentForm addComment={addComment} />} />
           <Route path="/comments" element={<CommentContainer comments={comments} onDeleteComment={onDeleteComment} />} />
+          <Route path="*" element={<NotFound />} />
+          <Route path="/library" component={LibraryPage} />
           <Route path="/comment/:id" element={<CommentDetail />} />
           <Route path="/" element={<Home />} />
         </Routes>

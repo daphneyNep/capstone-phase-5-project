@@ -1,20 +1,14 @@
-import React from "react";
-import AuthorCard from "./AuthorCard";
+import React from 'react';
+import AuthorCard from './AuthorCard';
 
-function AuthorContainer({ authors, onDeleteAuthor }) {
-    return (
-        <section>
-            <ul className="cards">
-                {authors.map(author => (
-                    <AuthorCard 
-                        key={author.id}  // Use author.id instead of authors.id
-                        author={author}  // Pass the current author, not the whole authors array
-                        onDeleteAuthor={onDeleteAuthor} 
-                    />
-                ))}
-            </ul>
-        </section>
-    );
-}
+const AuthorContainer = ({ authors, deleteAuthor }) => {
+  return (
+    <ul className='cards'>
+      {authors.map((author) => (
+        <AuthorCard key={author.id} author={author} deleteAuthor={deleteAuthor} />
+      ))}
+    </ul>
+  );
+};
 
 export default AuthorContainer;
