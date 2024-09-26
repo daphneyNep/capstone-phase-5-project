@@ -53,6 +53,15 @@ def handle_authors():
             db.session.rollback()
             logging.error(f"Error occurred during POST: {e}")
             return jsonify({'error': str(e)}), 500
+        
+@app.route('/api/authors/<int:id>', methods=['DELETE'])
+def delete_author(id):
+    author = Author.query.get(id)
+    if author:
+        db.session.delete(author)
+        db.session.commit()
+        return jsonify({'message': 'Author deleted successfully.'}), 200
+    return jsonify({'message': 'Author not found.'}), 404
 
 @app.route('/user', methods=['GET', 'POST'])
 def handle_users():
