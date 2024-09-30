@@ -6,6 +6,7 @@ import logging
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 
+
 from sqlalchemy.exc import SQLAlchemyError
 
 
@@ -19,7 +20,9 @@ def index():
     return '<h1>Project Server</h1>'
 
 
-
+def handle_error(message, status_code=500):
+    logging.error(message)
+    return jsonify({'error': message}), status_code
 
 @app.route('/author', methods=['GET', 'POST'])
 def handle_authors():
@@ -28,13 +31,13 @@ def handle_authors():
             authors = Author.query.all()
             output = [author.to_dict(only=('id', 'name', 'genre', 'bio', 'image_url')) for author in authors]
             return jsonify(output)
-        except Exception as e:
-            print(f"Error occurred during GET: {e}")
-            return jsonify({'error': 'Internal Server Error'}), 500
+        except SQLAlchemyError as e:
+            logging.error(f"Error occurred during GET: {e}")
+            return handle_error('Internal Server Error')
 
     elif request.method == 'POST':
         try:
-            data = request.get_json(force=True)
+            data = request.get_json()
             required_fields = ['name', 'genre']
             if not all(field in data for field in required_fields):
                 return jsonify({'error': 'Bad request, name and genre are required'}), 400
@@ -49,10 +52,10 @@ def handle_authors():
             db.session.commit()
             return jsonify(new_author.to_dict()), 201
         
-        except Exception as e:
+        except SQLAlchemyError as e:
             db.session.rollback()
             logging.error(f"Error occurred during POST: {e}")
-            return jsonify({'error': str(e)}), 500
+            return jsonify({'error': 'Internal Server Error'}), 500
         
 @app.route('/api/authors/<int:id>', methods=['DELETE'])
 def delete_author(id):
@@ -63,15 +66,32 @@ def delete_author(id):
         return jsonify({'message': 'Author deleted successfully.'}), 200
     return jsonify({'message': 'Author not found.'}), 404
 
+@app.route('/users', methods=['GET'])
+def get_users():
+    users = [
+        {"id": 1, "username": "Nicole"},
+        {"id": 2, "username": "James"},
+        {"id": 3, "username": "Tammy"},
+        {"id": 4, "username": "Nayla"},
+        {"id": 5, "username": "Jones"},
+        {"id": 6, "username": "Funnyface"},
+        {"id": 7, "username": "Luvreading04"},
+        {"id": 8, "username": "benji"},
+        {"id": 9, "username": "Grace"},
+        {"id": 10, "username": "Dora"},  # Added an ID for "Dora"
+    ]
+    return jsonify(users), 200
+
 @app.route('/user', methods=['GET', 'POST'])
 def handle_users():
     if request.method == 'GET':
         try:
             users = User.query.all()
+            logging.info(f"users fetched: {users}")  # Debugging line
             output = [user.to_dict() for user in users]
             return jsonify(output)
         except Exception as e:
-            logging.error(f"Error occurred during GET: {e}")
+            logging.error(f"Error occurred during GET: {e}", exc_info=True)
             return jsonify({'error': 'Internal Server Error'}), 500
 
     elif request.method == 'POST':
@@ -90,7 +110,7 @@ def handle_users():
             return jsonify(new_user.to_dict()), 201
         except Exception as e:
             db.session.rollback()
-            logging.error(f"Error occurred during POST: {e}")
+            logging.error(f"Error occurred during POST: {e}", exc_info=True)
             return jsonify({'error': 'Internal Server Error'}), 500
 
 @app.route('/author/<int:id>', methods=['GET', 'DELETE'])
@@ -116,6 +136,102 @@ def author_by_id(id):
 
         return jsonify({'message': 'Author deleted successfully'}), 200
 
+
+@app.route('/books', methods=['GET'])
+def get_books():
+    # Fetch books from your database and return them as JSON
+    books = [
+        {
+            "id": 1,
+            "title": "A Prince's Endless Indulgence",
+            "author": "Nalan Lingling",
+            "image_url": "https://th.bing.com/th/id/OIP.5QFMUWxvMdJFjr85wIw4egAAAA?rs=1&pid=ImgDetMain"  # Add the image URL
+        },
+        {
+            "id": 2,
+            "title": "The Tycoon's Fierce Pampering of His Wife",
+            "author": "Love at the Reunion",
+            "image_url": "https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1568095430l/53030953.jpg"  # Add the image URL
+        },
+        {
+            "id": 3,
+            "title": "Back to the Past: The Rise of the False Heiress...",
+            "author": "JQK",
+            "image_url": "https://th.bing.com/th/id/OIP.IhL3tZhzCwy7lpoiX6fTcAHaJ4?rs=1&pid=ImgDetMain"  # Add the image URL
+        },
+        {
+            "id": 4,
+            "title": "The Humble Family's Daughter Has A Spatial Pocket!",
+            "author": "Knocking Brush",
+            "image_url": "https://oregairu.b-cdn.net/wp-content/uploads/2024/09/the-humble-familys-daughter-has-a-spatial-pocket-193x278.jpg"  # Add the image URL
+        },
+        {
+            "id": 5,
+            "title": "Pampered Poisonous Royal Wife",
+            "author": "Master An",
+            "image_url": "https://img.wtr-lab.com/cdn/series/LNlzcLIp_GSAFMbWzT_XTg.jpg"  # Add the image URL
+        },
+        {
+            "id": 6,
+            "title": "She Became The Boss's Lady After Divorce",
+            "author": "NovelCamon",
+            "image_url": "https://th.bing.com/th/id/OIP.PJ0PyRXOXD-2gqlfs4RG-wHaHa?rs=1&pid=ImgDetMain" # Add the image URL
+        },
+        {
+            "id": 7,
+            "title": "Reborn in the Seventies: Pampered Wife...",
+            "author": "Purple Fantasy Enchantment",
+            "image_url": "https://th.bing.com/th/id/OIP.GUXcERCo2_MQ_SnLrkvz7AAAAA?rs=1&pid=ImgDetMain"  # Add the image URL
+        },
+        {
+            "id": 8,
+            "title": "The wealthy stepmom became wildly popular...",
+            "author": "Little Lucky Fire",
+            "image_url": "https://ik.imagekit.io/storybird/images/e2307839-0815-49f5-b883-10b480005981/0_985319130.png"  # Add the image URL
+        },
+    ]
+    return jsonify(books), 200
+
+# Route to handle GET and POST for a single book
+@app.route('/book', methods=['POST'])
+def create_book():
+    try:
+        # Get JSON data from the request
+        data = request.get_json()
+
+        # Validate the required fields are present
+        if 'title' not in data:
+            return jsonify({'error': 'Bad request, title is required'}), 400
+
+        # Create a new book instance using the provided data
+        new_book = Book(
+            title=data['title'],
+            summary=data.get('summary', ''),
+            image_url=data.get('image_url'),
+            author_id=data.get('author_id')
+        )
+        # Add the new book to the session and commit the changes
+        db.session.add(new_book)
+        db.session.commit()
+
+        # Return the created book with a 201 Created response
+        return jsonify(new_book.to_dict()), 201
+    except Exception as e:
+        # Rollback the session in case of an error
+        db.session.rollback()
+        print(f"Error occurred during POST: {e}")
+        return jsonify({'error': 'Internal Server Error'}), 500
+    
+@app.route('/book/<int:id>', methods=['DELETE'])
+def delete_book(id):
+    book = Book.query.get(id)
+    if not book:
+        return jsonify({"error": "Book not found"}), 404
+    db.session.delete(book)
+    db.session.commit()
+    return jsonify({"message": "Book deleted successfully"}), 200
+
+
 @app.route('/user/<int:id>', methods=['GET', 'DELETE'])
 def user_by_id(id):
     user = User.query.get(id)
@@ -129,56 +245,9 @@ def user_by_id(id):
         db.session.delete(user)
         db.session.commit()
         return jsonify({'message': 'User deleted successfully'}), 200
-
-@app.route('/book', methods=['GET', 'POST'])
-def handle_books():
-    if request.method == 'GET':
-        try:
-            books = Book.query.all()
-            output = [book.to_dict(only=('id', 'title', 'author_id', 'summary', 'image_url')) for book in books]
-            return jsonify(output)
-        except Exception as e:
-            print(f"Error occurred during GET: {e}")
-            return jsonify({'error': 'Internal Server Error'}), 500
-
-    elif request.method == 'POST':
-        try:
-            data = request.get_json(force=True)
-            required_fields = ['title']
-            if not all(field in data for field in required_fields):
-                return jsonify({'error': 'Bad request, title is required'}), 400
-
-            new_book = Book(
-                title=data['title'],
-                summary=data.get('summary', ''),
-                image_url=data.get('image_url'),
-                author_id=data.get('author_id'),
-            )
-            db.session.add(new_book)
-            db.session.commit()
-            return jsonify(new_book.to_dict()), 201
-        except Exception as e:
-            db.session.rollback()
-            print(f"Error occurred during POST: {e}")
-
-            return jsonify({'error': 'Internal Server Error'}), 500
-
-@app.route('/book/<int:id>', methods=['GET', 'DELETE'])
-def book_by_id(id):
-    book = Book.query.get(id)
-    if request.method == 'GET':
-        if book is None:
-            return jsonify({'error': 'Book not found'}), 404
-        return jsonify(book.to_dict())
-    elif request.method == 'DELETE':
-        if book is None:
-            return jsonify({'error': 'Book not found'}), 404
-        db.session.delete(book)
-        db.session.commit()
-        return jsonify({'message': 'Book deleted successfully'}), 200
-
+    
 @app.route('/userlist', methods=['GET', 'POST'])
-def handle_userlist():
+def get_user_lists():
     if request.method == 'GET':
         try:
             userlists = UserList.query.all()
@@ -187,16 +256,18 @@ def handle_userlist():
         except Exception as e:
             print(f"Error occurred during GET: {e}")
             return jsonify({'error': 'Internal Server Error'}), 500
-            
+
     elif request.method == 'POST':
         try:
             data = request.get_json(force=True)
-            if data is None:
+            if not data:
                 return jsonify({'error': 'Bad request, no JSON data provided'}), 400
+            
             required_fields = ['user_id', 'book_id', 'rating']
             if not all(field in data for field in required_fields):
                 return jsonify({'error': 'Bad request, user_id, book_id and rating are required'}), 400
             
+            # Create a new UserList entry
             new_userlist = UserList(
                 user_id=data['user_id'],
                 book_id=data['book_id'],
@@ -225,6 +296,23 @@ def userlist_by_id(id):
         db.session.delete(userlist)
         db.session.commit()
         return jsonify({'message': 'UserList deleted successfully'}), 200
+
+@app.route('/user_list/<int:user_list_id>/add_book', methods=['POST'])
+def add_book_to_user_list(user_list_id):
+    data = request.json
+    book_id = data.get('book_id')
+
+    user_list = UserList.query.get(user_list_id)
+    book = Book.query.get(book_id)
+
+    if not user_list or not book:
+        return jsonify({'error': 'UserList or Book not found'}), 404
+
+    # Add the book to the user's list
+    user_list.books.append(book)
+    db.session.commit()
+
+    return jsonify({'message': 'Book added to UserList successfully'}), 200
     
 @app.route('/comment', methods=['GET'])
 def get_comments():
@@ -235,27 +323,41 @@ def get_comments():
 def test():
     return 'Test route is working!'
 
+
 @app.route('/comments', methods=['POST'])
 def create_comment():
-    data = request.get_json()
-    if not data:
-        return {'message': 'Invalid JSON data, ensure Content-Type is application/json'}, 400
-
-    content = data.get('content')
-    book_id = data.get('book_id')
-    user_id = data.get('user_id')
-
-    if not content or not book_id or not user_id:
-        return {'message': 'Missing required fields: content, book_id, user_id'}, 400
-
     try:
-        comment = Comment(content=content, book_id=book_id, user_id=user_id)
-        db.session.add(comment)
+        # Get the JSON data from the request
+        data = request.get_json()
+
+        # Validate that the required fields are present
+        required_fields = ['content', 'user_id', 'book_id']
+        if not all(field in data for field in required_fields):
+            return jsonify({'error': 'Bad request, content, user_id, and book_id are required'}), 400
+
+        # Create a new Comment instance using the provided data
+        new_comment = Comment(
+            content=data['content'],
+            user_id=data['user_id'],
+            book_id=data['book_id']
+        )
+
+        # Add the new comment to the session and commit the changes
+        db.session.add(new_comment)
         db.session.commit()
-        return jsonify(comment.to_dict()), 201
-    except Exception as e:
+
+        # Return the created comment with a 201 Created response
+        return jsonify(new_comment.to_dict()), 201
+
+    except SQLAlchemyError as e:
+        # Rollback the session in case of a database error
         db.session.rollback()
-        return {'message': 'Failed to create comment: ' + str(e)}, 400
+        logging.error(f"Error occurred during POST /comments: {e}", exc_info=True)
+        return jsonify({'error': 'Internal Server Error'}), 500
+
+    except Exception as e:
+        logging.error(f"Unexpected error: {e}", exc_info=True)
+        return jsonify({'error': 'Internal Server Error'}), 500
 
 @app.route('/comments/<int:comment_id>', methods=['PUT'])
 def update_comment(comment_id):
@@ -297,6 +399,10 @@ def set_cookie():
     )
     return response
 
+
+
 if __name__ == '__main__':
     app.run(port=5555, debug=True)
+
+
 

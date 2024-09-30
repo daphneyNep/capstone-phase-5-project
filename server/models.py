@@ -7,7 +7,8 @@ from config import db  # Use the db from your config
 # Association table for the many-to-many relationship between UserLists and Books
 userlist_books = db.Table('userlist_books',
     db.Column('userlist_id', db.Integer, db.ForeignKey('userlists.id'), primary_key=True),
-    db.Column('book_id', db.Integer, db.ForeignKey('books.id'), primary_key=True)
+    db.Column('book_id', db.Integer, db.ForeignKey('books.id'), primary_key=True),
+    
 )
 
 
@@ -31,8 +32,17 @@ class Book(db.Model, SerializerMixin):
     # Fields to serialize
     serialize_rules = ('-author.books', '-comments.book', '-userlists.books')  # Avoid recursion
 
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'title': self.title,
+            'summary': self.summary,
+            'image_url': self.image_url,
+            'author': self.author.to_dict(only=('title', 'name')) if self.author else None
+        }
+
     def __repr__(self):
-        return f'<Book {self.id}, {self.title}, {self.author_id}, {self.summary} >'
+        return f'<Book {self.id}, {self.title}, {self.author_id}, {self.summary}, {self.image_url} >'
 
 
 class Author(db.Model, SerializerMixin):
@@ -64,6 +74,7 @@ class User(db.Model, SerializerMixin):
     # One-to-Many: A user can have many comments and userlists
     comments = db.relationship('Comment', back_populates='user', cascade="all, delete-orphan")
     userlists = db.relationship('UserList', back_populates='user', cascade="all, delete-orphan")
+    
 
     # Fields to serialize
     serialize_rules = ('-comments.user', '-userlists.user')
@@ -87,6 +98,8 @@ class Comment(db.Model, SerializerMixin):
 
     # Fields to serialize
     serialize_rules = ('-book.comments', '-user.comments')  # Avoid recursion in book and user
+
+    
 
     def __repr__(self):
         return f'<Comment {self.id}, {self.content}, {self.book_id}, {self.user_id}, {self.image_url}>'
@@ -116,6 +129,14 @@ class UserList(db.Model, SerializerMixin):
         if value < 1 or value > 5:
             raise ValueError('Rating must be between 1 and 5')
         return value
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'book_id': self.book_id,
+            'rating': self.rating
+        }
 
     def __repr__(self):
         return f'<UserList user_id={self.user_id}, rating={self.rating}>'
