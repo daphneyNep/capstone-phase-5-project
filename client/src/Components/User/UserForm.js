@@ -1,80 +1,81 @@
-import React from "react"
-import { useState} from "react"
-import { useNavigate } from "react-router-dom"
+import { useNavigate } from "react-router-dom";
+import { useFormik } from "formik";
+import * as yup from "yup";
+import React from "react";
 
-const UserForm = ({ addUser }) => {
-  const [userForm, setUserForm] = useState({
-    Id: "",
-    UserName: "",
-    Password: ""
-  });
-
+function UserForm({ users = [] }) { // Default to an empty array
   const navigate = useNavigate();
 
-  function handleChange(event) {
-    const newUser = {
-      ...userForm,
-      [event.target.name]: event.target.value
-    };
-    setUserForm(newUser);
-  }
+  // Create schema for form validation
+  const schema = yup.object().shape({
+      username: yup.string().required("Username is required"),
+      password: yup.string().required("Password is required")
+  });
 
-  function handleSubmit(e) {
-    e.preventDefault();
-  
-    fetch("http://localhost:5555/users", {
-      method: "POST",
-      headers: {
-        "Accept": "application/json",
-        "content-Type": "application/json"
-      },
-      body: JSON.stringify(userForm)
-    })
-      .then(response => {
-        if (!response.ok) {
-          return response.json().then(errorData => {
-            throw new Error(`Server responded with ${response.status}: ${errorData.message}`);
-          });
-        }
-        return response.json();
-      })
-      .then(addedUser => {
-        addUser(addedUser);
-        navigate("/Users");
-      })
-      .catch(error => console.error('Error adding User:', error));
-  }
+  const formik = useFormik({
+    initialValues: {
+        username: '',
+        password: ''
+    },
+    validationSchema: schema,
+    onSubmit: (values) => {
+        console.log("Submitting user data:", values);
+        fetch("http://127.0.0.1:5555/user", {
+            method: "POST",
+            body: JSON.stringify(values),
+            headers: { 'Content-Type': 'application/json' }
+        })
+        .then(res => {
+            if (res.ok) {
+                return res.json();
+            } else {
+                throw new Error("Failed to create user");
+            }
+        })
+        .then(data => {
+            navigate(`/user/${data.id}`);
+        })
+        .catch(error => {
+            console.error(error.message);
+        });
+    }
+  });
 
   return (
     <div className="new-user-form">
       <h2>Create User</h2>
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={formik.handleSubmit}>
         <div className="preferred">
-          <label className="large-label" htmlFor="UserName">UserName: </label>
+          <label className="large-label" htmlFor="username">Username: </label>
           <input
             type="text"
-            name="UserName"
-            id="UserName"
-            value={userForm.UserName} // Corrected here
-            onChange={handleChange}
+            name="username"
+            id="username"
+            value={formik.values.username}
+            onChange={formik.handleChange}
             required
           />
         </div><br />
         <div className="preferred">
-          <label className="large-label" htmlFor="Password">Password: </label>
+          <label className="large-label" htmlFor="password">Password: </label>
           <input
-            type="text"
-            name="Password"
-            id="Password"
-            value={userForm.Password} // Corrected here
-            onChange={handleChange}
+            type="password"
+            name="password"
+            id="password"
+            value={formik.values.password}
+            onChange={formik.handleChange}
             required
           />
         </div><br />
         <button type="submit">Add User</button>
       </form>
+      <ul>
+        {users.map(user => (
+          <li key={user.id}>{user.username}</li>
+        ))}
+      </ul>
     </div>
   );
-}
+};
 
 export default UserForm;

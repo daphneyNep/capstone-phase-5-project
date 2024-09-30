@@ -1,6 +1,6 @@
-import React, { useState } from "react"; // Import useState
+import React, { useState } from "react";
 
-function Search({ searchAuthor, searchBook }) {
+function Search({ onSearch }) {
     const [form, setForm] = useState('');
 
     const handleChange = (e) => {
@@ -10,21 +10,15 @@ function Search({ searchAuthor, searchBook }) {
     const handleSubmit = (e) => {
         e.preventDefault();
         if (form.trim()) {
-            // Call searchAuthor if it's defined
-            if (searchAuthor) {
-                searchAuthor(form);
-            }
-            // Call searchBook if it's defined
-            if (searchBook) {
-                searchBook(form);
-            }
+            // Call onSearch with the search term
+            onSearch(form);
         }
     };
 
     return (
         <div className="searchbar">
             <form onSubmit={handleSubmit}>
-                <label htmlFor="search">Search Books, Authors, or Comments:</label>
+                <label htmlFor="search">Search Books, Authors, Comments or Users:</label>
                 <input
                     type="text"
                     id="search"

@@ -1,26 +1,58 @@
-import React, { useState } from 'react';
-import BookCard from './BookCard'; // Ensure you have BookCard component
+import React, { useState, useEffect } from 'react';
+import BookContainer from './BookContainer';
+import Search from './Search';
+import BookForm from './BookForm'; // Import the BookForm component
 
 // Parent component that renders a list of books
-function BookList({ books }) {
-    const [comments, setComments] = useState([]);
+const BookList = () => {
+    const [books, setBooks] = useState([]); // State to hold the list of books
+    const [comments, setComments] = useState([]); // State to hold comments
     const [searchTerm, setSearchTerm] = useState(''); // State to hold the search term
 
+    useEffect(() => {
+        const fetchBooks = async () => {
+            try {
+                const response = await fetch('http://localhost:5555/books');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch books');
+                }
+                const data = await response.json();
+                setBooks(data);
+            } catch (error) {
+                console.error('Error fetching books:', error);
+            }
+        };
+
+        fetchBooks(); // Fetch books on component mount
+    }, []);
+
+    // Function to add a new book
+    const addBook = (newBook) => {
+        setBooks([...books, newBook]); // Add new book to the list
+    };
+
     // Function to delete a book
-    const deleteBook = (id) => {
-        console.log(`Deleting book with id: ${id}`);
-        // Logic to delete the book
+    const onDeleteBook = async (bookId) => {
+        try {
+            const response = await fetch(`http://localhost:5555/books/${bookId}`, {
+                method: 'DELETE',
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to delete book');
+            }
+
+            setBooks((prevBooks) => prevBooks.filter((book) => book.id !== bookId));
+            console.log(`Deleted book with id: ${bookId}`);
+        } catch (error) {
+            console.error('Error deleting book:', error);
+        }
     };
 
     // Function to add a comment to a book
     const addComment = (bookId, comment) => {
         console.log(`Adding comment to book ${bookId}: ${comment}`);
-        setComments(prevComments => [...prevComments, { bookId, content: comment, id: Date.now() }]);
-    };
-
-    // Function to handle search input
-    const handleSearchChange = (e) => {
-        setSearchTerm(e.target.value);
+        setComments((prevComments) => [...prevComments, { bookId, content: comment, id: Date.now() }]);
     };
 
     // Filter books based on the search term
@@ -30,30 +62,23 @@ function BookList({ books }) {
 
     return (
         <div>
-            <h2>Book List</h2>
+            <h1>Book List</h1>
+            
+            {/* Book Form */}
+            <BookForm addBook={addBook} /> {/* Pass addBook function to BookForm */}
 
             {/* Search input */}
-            <input
-                type="text"
-                placeholder="Search books..."
-                value={searchTerm}
-                onChange={handleSearchChange}
-            />
+            <Search onSearch={setSearchTerm} />
 
-            <ul>
-                {/* Iterate over the filtered books and render a BookCard for each */}
-                {filteredBooks.map((book) => (
-                    <BookCard
-                        key={book.id} 
-                        book={book} // Pass down book data
-                        deleteBook={deleteBook} // Pass deleteBook function
-                        addComment={addComment} // Pass addComment function
-                        comments={comments.filter(comment => comment.bookId === book.id)} // Filter comments by book ID
-                    />
-                ))}
-            </ul>
+            {/* BookContainer to display books */}
+            <BookContainer 
+                books={filteredBooks} 
+                onDeleteBook={onDeleteBook} 
+                addComment={addComment}
+                comments={comments}
+            />
         </div>
     );
-}
+};
 
 export default BookList;

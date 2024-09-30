@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useState } from "react"; 
 import Search from "./Search"; // Import your Search component
 import BookList from "./BookList"; // Import your BookList component
 import AuthorList from "./AuthorList"; // Import your AuthorList component
+import UserListContainer from './UserListContainer'; // Import UserListContainer
 
 function ParentComponent() {
     const [books, setBooks] = useState([
@@ -18,6 +19,12 @@ function ParentComponent() {
 
     const [filteredBooks, setFilteredBooks] = useState(books);
     const [filteredAuthors, setFilteredAuthors] = useState(authors);
+    const [userLists, setUserLists] = useState([]); // Initialize user lists data
+    const [users, setUsers] = useState([ // Initialize users data
+        { user_id: 1, username: "User1" },
+        { user_id: 2, username: "User2" },
+        // Add your user data here
+    ]);
 
     // Function to filter books based on the search input
     const searchBook = (searchTerm) => {
@@ -35,7 +42,14 @@ function ParentComponent() {
         setFilteredAuthors(filtered);
     };
 
-    
+    // Define the function to handle book selection
+    const handleSelectBook = (userListId, bookId) => {
+        console.log(`Selected book ${bookId} from user list ${userListId}`);
+        // Add your logic here to handle the selection
+    };
+
+    // Log the user data
+    console.log(users); // This will log the users to the console
 
     return (
         <div>
@@ -44,6 +58,16 @@ function ParentComponent() {
             {/* Render the filtered book and author lists */}
             <BookList books={filteredBooks} />
             <AuthorList authors={filteredAuthors} />
+            {/* Include the UserListContainer */}
+            <UserListContainer
+                userLists={userLists}
+                onDeleteUserList={() => {}} // Replace with actual delete function
+                onSelectBook={handleSelectBook} // Pass the defined function
+                books={filteredBooks} // Pass filtered books
+                addComments={() => {}} // Replace with actual add comments function
+                addRatings={() => {}} // Replace with actual add ratings function
+                users={users} // Pass the users to UserListContainer
+            />
         </div>
     );
 }

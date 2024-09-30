@@ -9,10 +9,14 @@ import CommentPage from "./Comment/CommentPage";
 import BookContainer from "./Book/BookContainer";
 import BookForm from "./Book/BookForm";
 import BookDetail from "./Book/BookDetail";
-import BookPage from "./Book/BookPage"; // <-- Make sure this line is added
-import UserContainer from "./User/UserContainer";
+import BookPage from "./Book/BookPage"; 
+import UserListContainer from "./UserList/UserListContainer";
+import UserListForm from "./UserList/UserListForm";
+import UserListDetail from "./UserList/UserListDetail";
 import UserForm from "./User/UserForm";
 import UserDetail from "./User/UserDetail";
+// import UserList from "./User/UserList";
+import UserContainer from "./User/UserContainer"
 import CommentContainer from "./Comment/CommentContainer";
 import CommentForm from "./Comment/CommentForm";
 import CommentDetail from "./Comment/CommentDetail";
@@ -51,49 +55,62 @@ function App() {
   const [authors, setAuthors] = useState([]);
   const [users, setUsers] = useState([]);
   const [comments, setComments] = useState([]);
+  const [userLists, setUserLists] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [ratings, setRatings] = useState([]);
+  const [onSelectedBooks, setOnSelectedBooks] = useState([]);
+  
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        console.log("Fetching data from:", "http://127.0.0.1:5555/book");
-        const bookRes = await fetch("http://127.0.0.1:5555/book");
-        if (!bookRes.ok) throw new Error("Failed to fetch books");
+
+        const bookRes = await fetch("http://127.0.0.1:5555/books");
+        if (!bookRes.ok) throw new Error(`Failed to fetch books: ${bookRes.statusText}`);
         const bookData = await bookRes.json();
         setBooks(bookData);
-
-        console.log("Fetching data from:", "http://127.0.0.1:5555/author");
+      
         const authorRes = await fetch("http://127.0.0.1:5555/author");
-        if (!authorRes.ok) throw new Error("Failed to fetch authors");
+        if (!authorRes.ok) throw new Error(`Failed to fetch authors: ${authorRes.statusText}`);
         const authorData = await authorRes.json();
         setAuthors(authorData);
-
-        console.log("Fetching data from:", "http://127.0.0.1:5555/user");
+      
         const userRes = await fetch("http://127.0.0.1:5555/user");
-        if (!userRes.ok) throw new Error("Failed to fetch users");
+        if (!userRes.ok) throw new Error(`Failed to fetch users: ${userRes.statusText}`);
         const userData = await userRes.json();
         setUsers(userData);
 
-        console.log("Fetching data from:", "http://127.0.0.1:5555/comment");
+        const userListRes = await fetch("http://127.0.0.1:5555/userlist");
+        if (!userListRes.ok) throw new Error(`Failed to fetch userLists: ${userListRes.statusText}`);
+        const userListData = await userListRes.json();
+        setUserLists(userListData);
+      
         const commentRes = await fetch("http://127.0.0.1:5555/comment");
-        if (!commentRes.ok) throw new Error("Failed to fetch comments");
+        if (!commentRes.ok) throw new Error(`Failed to fetch comments: ${commentRes.statusText}`);
         const commentData = await commentRes.json();
         setComments(commentData);
+
+        
+
       } catch (error) {
-        console.error("Error fetching data:", error);
+        console.error("Error fetching data:", error.message);
       }
     };
-
+  
     fetchData();
   }, []);
 
   const addAuthor = (author) => setAuthors((prev) => [...prev, author]);
   const addBook = (book) => setBooks((prev) => [...prev, book]);
   const addUser = (user) => setUsers((prev) => [...prev, user]);
-  const addComment = (comment) => setComments((prev) => [...prev, comment]);
+  const addUserList = (userList) => setUserLists((prev) => [...prev, userList]);
+  const addComments = (comment) => setComments((prev) => [...prev, comment]);
+  const addRatings = (rating) => setRatings((prev) => [...prev, rating]);
+  // const onSelectedBooks = (book) => setOnSelectedBooks((prev) => [...prev, book]);
+  
 
-  const DeleteAuthor = (id) => {
-    console.log(`Deleting author with id: ${id}`);
+  const onDeleteAuthor = (id) => {
+    console.log(`onDeleting author with id: ${id}`);
     fetch(`http://127.0.0.1:5555/author/${id}`, { method: 'DELETE' })
       .then(response => {
         if (!response.ok) throw new Error('Failed to delete author');
@@ -103,7 +120,8 @@ function App() {
   };
 
   const onDeleteBook = (id) => {
-    fetch(`http://127.0.0.1:5555/book/${id}`, { method: 'DELETE' })
+    console.log(`onDelete book with id: ${id}`);
+    fetch(`http://127.0.0.1:5555/books/${id}`, { method: 'DELETE' }) // Fix the URL here
       .then(response => {
         if (!response.ok) throw new Error('Failed to delete book');
         setBooks(prev => prev.filter(book => book.id !== id));
@@ -111,14 +129,26 @@ function App() {
       .catch(error => console.error('Error:', error));
   };
 
-  const onDeleteUser = (user_id) => {
-    fetch(`http://127.0.0.1:5555/user/${user_id}`, { method: 'DELETE' })
+  const onDeleteUser = (id) => {
+    console.log(`Attempting to delete user with ID: ${id}`);
+    fetch(`http://127.0.0.1:5555/user/${id}`, { method: 'DELETE' })
+      .then((response) => {
+        if (!response.ok) throw new Error(`Failed to delete user`);
+        setUsers((prev) => prev.filter((user) => user.id !== id));
+      })
+      .catch((error) => console.error('Error while deleting user:', error));
+  };
+
+  const onDeleteUserList = (id) => {
+    console.log(`onDeleting userList with id: ${id}`);
+    fetch(`http://127.0.0.1:5555/userList/${id}`, { method: 'DELETE' })
       .then(response => {
-        if (!response.ok) throw new Error('Failed to delete user');
-        setUsers(prev => prev.filter(user => user.id !== user_id));
+        if (!response.ok) throw new Error('Failed to delete userList');
+        setUserLists((prevUserLists) => prevUserLists.filter(userList => userList.id !== id));
       })
       .catch(error => console.error('Error:', error));
   };
+  
 
   const onDeleteComment = (id) => {
     console.log(`Attempting to delete comment with ID: ${id}`);
@@ -142,49 +172,100 @@ function App() {
       });
   };
 
-  useEffect(() => {
-    // Fetch data as usual
-  }, []);
+  const handleSelectedBook = (bookId) => {
+    const selectedBook = books.find(book => book.id === bookId);
+    if (selectedBook) {
+      setOnSelectedBooks((prev) => [...prev, selectedBook]);
+    }
+    console.log("Selected book ID:", bookId);
+  };
+  
 
   // Filter the books and authors based on the searchTerm
   const filteredBooks = books.filter(book =>
     book.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
-
+  
   const filteredAuthors = authors.filter(author =>
     author.name.toLowerCase().includes(searchTerm.toLowerCase())
-);
+  );
+  
+  const filteredUsers = users.filter(user =>
+    user.username.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+  const filteredComments = comments.filter(comment =>
+    String(comment.user_id).toLowerCase().includes(searchTerm.toLowerCase())
+  );
+  const filteredUserLists = userLists.filter(userlist =>
+    String(userlist.user_id).toLowerCase().includes(searchTerm.toLowerCase())
+  );
+//   const handleAddComments = (comment) => {
+//     console.log('Comment added:', comment);
+// };
+
+// const handleAddRatings = (rating) => {
+//     console.log('Rating added:', rating);
+// };
+
+// const handleDeleteUserList = (id) => {
+//     console.log('Delete user list with id:', id);
+// };
+
+
+
+  
 
   return (
-    <ErrorBoundary> {/* Wrap your application in ErrorBoundary */}
+    <ErrorBoundary>
       <div className="App">
         <Header />
         <NavBar />
-        {/* Search input */}
+        <h2>Selected Books</h2>
+        {onSelectedBooks.map((book) => (
+          <div key={book.id}>{book.title}</div>
+        ))}
         <input
           type="text"
-          placeholder="Search books or authors..."
+          placeholder="Search..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
+         <Routes>
+          {/* Other Routes */}
+          <Route path="/books" element={
+            <BookContainer 
+              books={books}
+              onDeleteBook={onDeleteBook} 
+              addComments={addComments} 
+              comments={comments}
+              handleSelectedBook={handleSelectedBook} // Pass the selection handler
+            />
+          } />
+          {/* Other Routes */}
+        </Routes>
+        
         <Routes>
+        <Route path="/" element={<Home />} />
+          <Route path="/library" element={<LibraryPage onDeleteBook={onDeleteBook} />} />
           <Route path="/author/new" element={<AuthorForm addAuthor={addAuthor} />} />
           <Route path="/author/:id" element={<AuthorDetail />} />
-          <Route path="/authors" element={<AuthorContainer authors={filteredAuthors} deleteAuthor={DeleteAuthor} />} />
-          <Route path="/books" element={<BookContainer books={filteredBooks} onDeleteBook={onDeleteBook} addComment={addComment} comments={comments} />}/>
+          <Route path="/authors" element={<AuthorContainer authors={filteredAuthors} onDeleteAuthor={onDeleteAuthor} />} />
+          <Route path="/books" element={<BookContainer books={filteredBooks} onDeleteBook={onDeleteBook} addComments={addComments} comments={comments}/>} />
           <Route path="/book/new" element={<BookForm addBook={addBook} />} />
-          <Route path="/book/:id" element={<BookDetail />} />
+          <Route path="/book/:id" element={<BookDetail books={books}/> } />
           <Route path="/books/:bookid" element={<BookPage />} />
           <Route path="/books/:bookid/comments" element={<CommentPage comments={comments} />} />
-          <Route path="/books" element={<BookContainer books={books} onDeleteBook={onDeleteBook} addComment={addComment} comments={comments} />} />
           <Route path="/user/new" element={<UserForm addUser={addUser} />} />
-          <Route path="/users" element={<UserContainer users={users} onDeleteUser={onDeleteUser} />} />
+          <Route path="/users" element={<UserContainer users={filteredUsers} onDeleteUser={onDeleteUser} />} />
           <Route path="/user/:id" element={<UserDetail />} />
-          <Route path="/comment/new" element={<CommentForm addComment={addComment} />} />
-          <Route path="/comments" element={<CommentContainer comments={comments} onDeleteComment={onDeleteComment} />} />
-          <Route path="*" element={<NotFound />} />
-          <Route path="/library" component={LibraryPage} />
+          <Route path="/userList/new" element={<UserListForm addUserList={addUserList} />} />
+          <Route path="/userLists" element={<UserListContainer userLists={filteredUserLists} onDeleteUserList={onDeleteUserList} addComment={addComments} comments={comments} addRatings={addRatings} ratings={ratings} onSelectedBook={onSelectedBooks} books={books} users={users} />} />
+          <Route path="/userList/:id" element={<UserListDetail />} />
+          <Route path="/comment/new" element={<CommentForm addComments={addComments} />} />
+          <Route path="/comments" element={<CommentContainer comments={filteredComments} onDeleteComment={onDeleteComment} />} />
           <Route path="/comment/:id" element={<CommentDetail />} />
+          <Route path="*" element={<NotFound />} />
+          <Route path="/library" element={<LibraryPage onDeleteBook={onDeleteBook} />} />
           <Route path="/" element={<Home />} />
         </Routes>
       </div>

@@ -1,66 +1,69 @@
-import React, { useState, useEffect } from 'react';
-import AuthorCard from './AuthorCard';
+import React, { useEffect, useState } from 'react';
+import AuthorContainer from './AuthorContainer';
+import AuthorForm from './AuthorForm';
+import Search from './Search'; // Ensure this import is correct
 
 const AuthorList = () => {
     const [authors, setAuthors] = useState([]);
-    const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [searchTerm, setSearchTerm] = useState('');
 
     useEffect(() => {
-        // Fetch authors from your API
         const fetchAuthors = async () => {
             try {
-                const response = await fetch('/api/authors'); // Update with your API endpoint
+                const response = await fetch('http://localhost:5555/authors');
                 if (!response.ok) {
-                    throw new Error('Network response was not ok');
+                    throw new Error('Failed to fetch authors');
                 }
                 const data = await response.json();
                 setAuthors(data);
-            } catch (err) {
-                setError(err.message);
-            } finally {
-                setLoading(false);
+                console.log(data); // Log fetched authors
+            } catch (error) {
+                console.error('Error fetching authors:', error);
+                setError('Failed to fetch authors. Please try again later.');
             }
         };
-        fetchAuthors();
+
+        fetchAuthors(); // Fetch authors on component mount
     }, []);
 
-    const deleteAuthor = async (id) => {
+    const addAuthor = (newAuthor) => {
+        setAuthors((prevAuthors) => [...prevAuthors, newAuthor]); // Add new author to the list
+    };
+
+    const onDeleteAuthor = async (authorId) => {
         try {
-            const response = await fetch(`/api/authors/${id}`, {
+            const response = await fetch(`http://localhost:5555/authors/${authorId}`, {
                 method: 'DELETE',
             });
 
             if (!response.ok) {
-                throw new Error('Failed to delete the author');
+                throw new Error('Failed to delete author');
             }
 
-            // Use functional form of setAuthors to ensure we have the latest state
-            setAuthors((prevAuthors) => prevAuthors.filter(author => author.id !== id));
-        } catch (err) {
-            console.error(err.message);
+            setAuthors((prevAuthors) => prevAuthors.filter((author) => author.id !== authorId));
+            console.log(`Deleted author with id: ${authorId}`);
+        } catch (error) {
+            console.error('Error deleting author:', error);
+            setError('Failed to delete author. Please try again later.');
         }
     };
 
-    if (loading) {
-        return <div>Loading authors...</div>;
-    }
-
-    if (error) {
-        return <div>Error: {error}</div>;
-    }
+    const filteredAuthors = authors.filter(author =>
+        author.name.toLowerCase().includes(searchTerm.toLowerCase()) // Assuming `author.name` is correct
+    );
 
     return (
         <div>
             <h1>Author List</h1>
-            <ul>
-                {authors.map(author => (
-                    <li key={author.id}>
-                        <AuthorCard author={author} />
-                        <button onClick={() => deleteAuthor(author.id)}>Delete</button>
-                    </li>
-                ))}
-            </ul>
+            {error && <div className="error">{error}</div>} {/* Display error message */}
+            <AuthorForm addAuthor={addAuthor} />
+            <Search onSearch={setSearchTerm} />
+            {filteredAuthors.length > 0 ? (
+                <AuthorContainer authors={filteredAuthors} onDeleteAuthor={onDeleteAuthor} />
+            ) : (
+                <div>No authors available</div>
+            )}
         </div>
     );
 };

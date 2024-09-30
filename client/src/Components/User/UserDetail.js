@@ -1,73 +1,60 @@
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import React from "react";
 
 function UserDetail() {
-    const [user, setUser] = useState(null);
-    const [loading, setLoading] = useState(true);
+    const [user, setUser] = useState({});
     const [error, setError] = useState(null);
-    const { id } = useParams();
     const navigate = useNavigate();
+    const { id } = useParams();
 
+  
     useEffect(() => {
-        const token = localStorage.getItem("authToken");
-
-        if (!token) {
-            navigate("/login");
-            return;
-        }
-
-        fetch(`http://127.0.0.1:5555/user/${id}`, {
-            method: "GET",
-            headers: {
-                Authorization: `Bearer ${token}`,
-                "Content-Type": "application/json"
-            },
-        })
-            .then((res) => {
-                if (!res.ok) {
-                    if (res.status === 401) {
-                        throw new Error("Unauthorized access. Please login.");
-                    }
-                    throw new Error("Failed to fetch user data");
+        fetch(`http://127.0.0.1:5555/user/${id}`)
+            .then(res => {
+                if (res.ok) {
+                    return res.json();
+                } else {
+                    throw new Error("Failed to fetch");
                 }
-                return res.json();
             })
-            .then((data) => {
-                setUser(data);
-                setLoading(false);
-            })
-            .catch((err) => {
-                setError(err.message || "User not found");
-                setLoading(false);
+            .then(data => setUser(data))
+            .catch(() => {
+                setError("Failed to load user data");
+                navigate("/not-found"); // Redirect to /not-found on error
             });
     }, [id, navigate]);
 
-    const logout = () => {
-        localStorage.removeItem("authToken");
-        navigate("/login");
-    };
-
-    if (loading) {
-        return <p>Loading...</p>;
-    }
+    const {username, all_users = [] } = user;
 
     if (error) {
-        return <p>{error}</p>;
+        return <div>Error: {error}</div>; // Display error message
     }
 
-    if (!user) {
-        return <p>No user data available</p>;
-    }
-
-    const { username, password } = user;
-
-    return (
-        <div className="user-detail" id={id}>
+  return (
+    <div className="user-detail" user_id={id}>
             <h1>{username}</h1>
-            <h1>{password}</h1>
-            <div className="user-card"></div>
-            <button onClick={logout}>Logout</button> {/* Logout button */}
+            <div className="user-card">
+                <figure>
+                    <section>
+                        <p>Name: {username}</p>
+                    </section>
+                </figure>
+                <section className="details">
+                    <h3 style={{ margin: "16px auto" }}>Other Users</h3>
+                    <ul className="user">
+                        {all_users.map(u => (
+                            <li key={u.id}>
+                                <div className="u-user">
+                                    <Link to={`/users/${u.id}`}>
+                                        <p style={{ fontStyle: "italic" }}>{u.name}</p>
+                                    </Link>
+                                </div>
+                            </li>
+                        ))}
+                    </ul>
+                </section>
+            </div>
         </div>
     );
 }

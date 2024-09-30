@@ -1,54 +1,40 @@
 import React, { useState } from "react";
-import { Link } from 'react-router-dom';
+// import PropTypes from "prop-types";
+// import { Link } from 'react-router-dom';
 
-const BookCard = ({ book, deleteBook, addComment, comments = [] }) => {
+const BookCard = ({ book, onAddToUserList, onDeleteBook, comments = [], addComment }) => {
   const [newComment, setNewComment] = useState('');
 
-  if (!book) return <div>No book data available</div>; // Handle undefined book
-
-  const handleCommentChange = (e) => setNewComment(e.target.value);
-
   const handleAddComment = () => {
-    if (newComment.trim() === '') return; // Prevent adding empty comments
+    if (newComment.trim() === '') return;
     addComment(book.id, newComment);
-    setNewComment(''); // Clear input field after adding comment
+    setNewComment('');
   };
 
   return (
-    <li>
-      <div>
-        {/* Book Details */}
-        <h3>{book.title} by {book.author}</h3>
-        <p>{book.genre}</p>
-        <p>{book.summary}</p>
-        {book.image_url && <img src={book.image_url} alt={book.title} width="150" />} {/* Book image */}
-        
-        {/* Input field for adding a comment */}
-        <input
-          type="text"
-          value={newComment}
-          onChange={handleCommentChange}
-          placeholder="Write a comment"
-          id={`comment-input-${book.id}`} // Unique id based on book id
-          name={`comment-${book.id}`} // Unique name based on book id
-          autoComplete="off" // Optional: Disable autocomplete if needed
-        />
-        <button onClick={handleAddComment}>Add Comment</button>
+    <li className="book-card">
+      <h2>{book.title} by {book.author}</h2>
+      <p>{book.genre}</p>
+      <p>{book.summary}</p>
+      {book.image_url && <img src={book.image_url} alt={book.title} width="150" />}
+      
+      <button onClick={() => onAddToUserList(book.id)}>Add to My List</button>
 
-        {/* Button to delete the book */}
-        <button onClick={() => deleteBook(book.id)}>Delete</button>
+      <input
+        type="text"
+        value={newComment}
+        onChange={e => setNewComment(e.target.value)}
+        placeholder="Write a comment"
+      />
+      <button onClick={handleAddComment}>Add Comment</button>
 
-        {/* Display comments for this book */}
-        <h4>Comments</h4>
-        <ul>
-          {comments.filter(comment => comment.bookId === book.id).map(comment => (
-            <li key={comment.id}>{comment.content}</li>
-          ))}
-        </ul>
+      <button onClick={() => onDeleteBook(book.id)}>Delete Book</button>
 
-        {/* Link to the comments page for this book */}
-        <Link to={`/books/${book.id}/comments`}>View Comments</Link>
-      </div>
+      <ul>
+        {comments.map(comment => (
+          <li key={comment.id}>{comment.content}</li>
+        ))}
+      </ul>
     </li>
   );
 };

@@ -1,96 +1,133 @@
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom"; // Ensure you import useNavigate and useParams
 import { useEffect, useState } from "react";
 import React from "react";
 
 function UserListDetail() {
-	const [userList, setUserList] = useState({}); // Fix state name to userList
-	const [comment, setComment] = useState(""); // State for the new comment
-	const [comments, setComments] = useState([]); // State for the list of comments
-	const navigate = useNavigate(); // Initialize navigate
+    const [userList, setUserList] = useState({}); 
+    const [comment, setComment] = useState(""); 
+    const [comments, setComments] = useState([]); 
+    const [rate, setRate] = useState("");
+    const [ratings, setRatings] = useState([]); 
+    const [error, setError] = useState(null); // Keep the error state
+    const navigate = useNavigate(); 
 
-	const { id } = useParams();
+    const { id } = useParams();
 
-	useEffect(() => {
-		fetch(`http://127.0.0.1:5555/user/${id}`)
-			.then((res) => {
-				if (res.ok) {
-					return res.json();
-				} else {
-					throw new Error("Failed to fetch");
-				}
-			})
-			.then((data) => setUserList(data)) // Fix to setUserList
-			.catch(() => navigate("/not-found")); // Redirect to /not-found on error
-	}, [id, navigate]); // Added navigate to dependency array
+    useEffect(() => {
+        const fetchUserList = async () => {
+            try {
+                const res = await fetch(`http://127.0.0.1:5555/userList/${id}`);
+                if (!res.ok) {
+                    throw new Error("Failed to fetch");
+                }
+                const data = await res.json();
+                setUserList(data);
+            } catch (err) {
+                console.error("Failed to load userList data:", err);
+                setError("Failed to load userList data");
+                navigate("/not-found");
+            }
+        };
 
-	const { user_id, book_id, rating, all_users = [], image_url, name } = userList; // Fix: Destructure from userList
+        fetchUserList();
+    }, [id, navigate]);
 
-	const handleCommentChange = (e) => {
-		setComment(e.target.value);
-	};
+    const { user_id, book_id, all_userLists = [] } = userList;
 
-	const handleCommentSubmit = (e) => {
-		e.preventDefault();
-		if (comment.trim()) {
-			setComments([...comments, comment]);
-			setComment(""); // Clear the input field after submitting
-		}
-	};
+    const handleCommentChange = (e) => {
+        setComment(e.target.value);
+    };
 
-	return (
-		<div className="user-detail" id={id}>
-			<p>{user_id}</p>
-			<p>{book_id}</p>
-				<div className="user-card">
-					<figure className="image_url">
-						{image_url && <img src={image_url} alt={name} />} {/* Fix: Handle image_url properly */}
-							<section>
-								<p>{book_id}</p>
-								<p>{user_id}</p>
-								<p>{rating}</p>
-							</section>
-					</figure>
-						<section className="details">
-							<h3 style={{ margin: "16px auto" }}>Author</h3>
-							<ul className="author">
-								{all_users.map((a) => (
-									<li key={a.id}>
-								<img
-									width={"100px"}
-									src={a.image_url}
-									alt={a.name}
-								/>
-								<div className="a-user">
-									<Link to={`/authors/${a.id}`}> {/* Fix: Use correct id for the author */}
-										<p style={{ fontStyle: "italic" }}>{a.name}</p> {/* Fix: Access correct field */}
-									</Link>
-								</div>
-							</li>
-						))}
-					</ul>
-				</section>
-			</div>
+    const handleCommentSubmit = (e) => {
+        e.preventDefault();
+        if (comment.trim()) {
+            setComments([...comments, comment]);
+            setComment("");
+        }
+    };
 
-			<section className="comments">
-				<h2>Submit your comment!</h2>
-				<form onSubmit={handleCommentSubmit}>
-					<textarea
-						value={comment}
-						onChange={handleCommentChange}
-						placeholder="Add a comment"
-						rows="4"
-						style={{ width: "100%" }}
-					/>
-					<button type="submit">Submit</button>
-				</form>
-				<ul>
-					{comments.map((com, index) => (
-						<li key={index}>{com}</li>
-					))}
-				</ul>
-			</section>
-		</div>
-	);
+    const handleRateChange = (e) => {
+        setRate(e.target.value);
+    };
+
+    const handleRateSubmit = (e) => {
+        e.preventDefault();
+        if (rate.trim()) {
+            setRatings([...ratings, rate]);
+            setRate("");
+        }
+    };
+
+    return (
+        <div className="user-detail" id={id}>
+            {/* Display error if there is one */}
+            {error && <p style={{ color: "red" }}>{error}</p>} {/* Add this line to display the error */}
+
+            <p>User ID: {user_id}</p>
+            <p>Book ID: {book_id}</p>
+
+            <div className="user-card">
+                <figure>
+                    <section>
+                        <p>Book ID: {book_id}</p>
+                        <p>User ID: {user_id}</p>
+                    </section>
+                </figure>
+                <section className="details">
+                    <h3 style={{ margin: "16px auto" }}>User Lists</h3>
+                    <ul className="userList">
+                        {all_userLists.map((u) => (
+                            <li key={u.id}>
+                                <div className="u-user">
+                                    <Link to={`/users/${u.id}`}>
+                                        <p style={{ fontStyle: "italic" }}>{u.name}</p>
+                                    </Link>
+                                </div>
+                            </li>
+                        ))}
+                    </ul>
+                </section>
+            </div>
+
+            <section className="comments">
+                <h2>Submit your comment!</h2>
+                <form onSubmit={handleCommentSubmit}>
+                    <textarea
+                        value={comment}
+                        onChange={handleCommentChange}
+                        placeholder="Add a comment"
+                        rows="4"
+                        style={{ width: "100%" }}
+                    />
+                    <button type="submit">Submit</button>
+                </form>
+                <ul>
+                    {comments.map((com, index) => (
+                        <li key={index}>{com}</li>
+                    ))}
+                </ul>
+            </section>
+
+            <section className="rates">
+                <h2>Submit your rating!</h2>
+                <form onSubmit={handleRateSubmit}>
+                    <textarea
+                        value={rate}
+                        onChange={handleRateChange}
+                        placeholder="Add a rating"
+                        rows="4"
+                        style={{ width: "100%" }}
+                    />
+                    <button type="submit">Submit</button>
+                </form>
+                <ul>
+                    {ratings.map((rate, index) => (
+                        <li key={index}>{rate}</li>
+                    ))}
+                </ul>
+            </section>
+        </div>
+    );
 }
 
 export default UserListDetail;

@@ -10,7 +10,11 @@ function UserListForm() {
     const schema = yup.object().shape({
         book_id: yup.string().required("Book Id is required"),
         user_id: yup.string().required("User Id is required"),
-        rating: yup.number().required("Rating is required"), // Fixed from inter() to number()
+        rating: yup
+            .number()
+            .required("Rating is required")
+            .min(1, "Rating must be at least 1")
+            .max(5, "Rating can't be more than 5"),
     });
 
     // Create useFormik hook
@@ -18,13 +22,13 @@ function UserListForm() {
         initialValues: {
             book_id: '',
             user_id: '',
-            rating: '',
+            rating: '', // Initialize rating
         },
 
         validationSchema: schema,
         onSubmit: (values) => {
-            console.log("Submitting userList data:", values);  // Debug statement
-            fetch("http://127.0.0.1:5555/userList", {
+            console.log("Submitting userList data:", values);
+            fetch("http://127.0.0.1:5555/List", {
                 method: "POST",
                 body: JSON.stringify(values),
                 headers: { 'Content-Type': 'application/json' }
@@ -33,15 +37,15 @@ function UserListForm() {
                 if (res.ok) {
                     return res.json();
                 } else {
-                    console.error("Something went wrong with POST request");
                     throw new Error("Failed to create userList");
                 }
             })
             .then(data => {
-                navigate(`/userList/${data.id}`);
+                navigate(`/userList/${data.id}`); // Navigate to the newly created user list
             })
             .catch(error => {
                 console.error(error.message);
+                // Optionally, you could set an error state here to inform the user
             });
         }
     });
@@ -54,7 +58,7 @@ function UserListForm() {
                     type="number"
                     name="book_id"
                     onChange={formik.handleChange}
-                    value={formik.values.book_id}
+                    value={formik.values.book_id} // Correct the field name
                 />
                 {formik.errors.book_id && formik.touched.book_id && (
                     <h3 style={{ color: "red" }}>{formik.errors.book_id}</h3>
@@ -65,7 +69,7 @@ function UserListForm() {
                     type="number"
                     name="user_id"
                     onChange={formik.handleChange}
-                    value={formik.values.name}
+                    value={formik.values.user_id} // Correct the field name
                 />
                 {formik.errors.user_id && formik.touched.user_id && (
                     <h3 style={{ color: "red" }}>{formik.errors.user_id}</h3>
@@ -76,7 +80,7 @@ function UserListForm() {
                     type="number"
                     name="rating"
                     onChange={formik.handleChange}
-                    value={formik.values.rating}
+                    value={formik.values.rating} // Ensure value is connected to formik state
                 />
                 {formik.errors.rating && formik.touched.rating && (
                     <h3 style={{ color: "red" }}>{formik.errors.rating}</h3>

@@ -6,6 +6,7 @@ function BookDetail() {
     const [book, setBook] = useState({});
     const [comment, setComment] = useState(""); // State for the new comment
     const [comments, setComments] = useState([]); // State for the list of comments
+    const [error, setError] = useState(null);
     const navigate = useNavigate(); // Initialize navigate
     const { id } = useParams(); // Use 'id' from useParams
 
@@ -19,10 +20,13 @@ function BookDetail() {
                 }
             })
             .then(data => setBook(data))
-            .catch(() => navigate("/not-found")); // Redirect to /not-found on error
-    }, [id, navigate]); // Include 'id' in the dependency array
+            .catch(() => {
+                setError("Failed to load book data");
+                navigate("/not-found"); // Redirect to /not-found on error
+            });
+    }, [id, navigate]);
 
-    const { title, image_url, author_id, book_id, summary, all_books = [] } = book;
+    const { author_id, title, summary, image_url, all_books = [] } = book;
 
     const handleCommentChange = (e) => {
         setComment(e.target.value);
@@ -36,35 +40,32 @@ function BookDetail() {
         }
     };
 
+    if (error) {
+        return <div>Error: {error}</div>; // Display error message
+    }
+
     return (
-        <div className="book-detail" book_id={book_id}>
+        <div className="book-detail" author_id={id}>
             <h1>{title}</h1>
             <p>{summary}</p>
-            
+
             <div className="book-card">
-                <figure className="image">
-                    <img src={image_url} alt={title} />
+                <figure className="image_url">
+                    <img src={image_url} alt={author_id} />
                     <section>
-                        <p>{book_id}</p>
-                        <p>{title}</p>
-                        <p>{author_id}</p>
-                        <p>Summary:</p>
+                        <p>Title: {title}</p>
                         <pre>{summary}</pre>
                     </section>
                 </figure>
                 <section className="details">
-                    <h3 style={{ margin: "16px auto" }}>Author</h3>
-                    <ul className="author">
-                        {all_books.map(s => (
-                            <li key={s.id}>
-                                <img
-                                    width={"100px"}
-                                    src={s.image}
-                                    alt={s.title}
-                                />
-                                <div className="s-user">
-                                    <Link to={`/authors/${author_id}`}>
-                                        <p style={{ fontStyle: "italic" }}>{s.author_name}</p>
+                    <h3 style={{ margin: "16px auto" }}>Other Books</h3>
+                    <ul className="book">
+                        {all_books.map(b => (
+                            <li key={b.id}>
+                                <img width={"100px"} src={b.image_url} alt={b.name} />
+                                <div className="a-user">
+                                    <Link to={`/books/${b.id}`}>
+                                        <p style={{ fontStyle: "italic" }}>{b.name}</p>
                                     </Link>
                                 </div>
                             </li>

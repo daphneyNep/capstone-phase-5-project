@@ -9,7 +9,10 @@ function NavBar() {
           <Link to="/">Home</Link>
         </li>
         <li>
-          <Link to="/users">User List</Link>
+          <Link to="/users">User</Link>
+        </li>
+        <li>
+          <Link to="/userLists">UserList</Link>
         </li>
         <li>
           <Link to="/authors">Author List</Link>
@@ -21,13 +24,13 @@ function NavBar() {
           <Link to="/comments">View Comments</Link>
         </li>
         <li>
-          <Link to="/user/new">Login</Link>
+          <Link to="/book/new">Add New Book</Link>
         </li>
         <li>
           <Link to="/author/new">Add New Author</Link>
         </li>
         <li>
-          <Link to="/book/new">Add New Book,</Link>
+          <Link to="/user/new">Login</Link>
         </li>
       </ul>
     </nav>

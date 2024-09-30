@@ -1,8 +1,14 @@
-import React from "react"
+import React from "react";
 
-const UserCard = ({ user: { id, userName, password }, deleteUser }) => {
+const UserCard = ({ user: { id, userName, password }, onDeleteUser }) => {
+  console.log('onDeleteUser type:', typeof onDeleteUser); // Check the type
+
   const handleDelete = () => {
-    deleteUser(id);
+    if (typeof onDeleteUser === 'function') {
+      onDeleteUser(id);
+    } else {
+      console.error('onDeleteUser is not a function');
+    }
   };
 
   return (
@@ -14,4 +20,4 @@ const UserCard = ({ user: { id, userName, password }, deleteUser }) => {
   );
 };
 
-export default UserCard
+export default UserCard;
