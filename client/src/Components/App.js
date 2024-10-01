@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from "react";
-import { Route, Routes } from "react-router-dom";
+import { Routes, Route } from 'react-router-dom';
+
+import React, { useState, useEffect } from 'react';
 
 import Home from "./Home";
 import AuthorForm from "./Author/AuthorForm";
@@ -15,7 +16,8 @@ import UserListForm from "./UserList/UserListForm";
 import UserListDetail from "./UserList/UserListDetail";
 import UserForm from "./User/UserForm";
 import UserDetail from "./User/UserDetail";
-// import UserList from "./User/UserList";
+import UserList from "./UserList/UserLists";
+import UserListComments from './UserList/UserListComments';
 import UserContainer from "./User/UserContainer"
 import CommentContainer from "./Comment/CommentContainer";
 import CommentForm from "./Comment/CommentForm";
@@ -25,6 +27,7 @@ import LibraryPage from './LibraryPage';
 import NavBar from "./NavBar";
 import Header from "./Header";
 import NotFound from "./NotFound"; 
+
 
 // Move ErrorBoundary class to the top level
 class ErrorBoundary extends React.Component {
@@ -172,7 +175,7 @@ function App() {
       });
   };
 
-  const handleSelectedBook = (bookId) => {
+  const handleSelectedBooks = (bookId) => {
     const selectedBook = books.find(book => book.id === bookId);
     if (selectedBook) {
       setOnSelectedBooks((prev) => [...prev, selectedBook]);
@@ -199,16 +202,22 @@ function App() {
   const filteredUserLists = userLists.filter(userlist =>
     String(userlist.user_id).toLowerCase().includes(searchTerm.toLowerCase())
   );
-//   const handleAddComments = (comment) => {
-//     console.log('Comment added:', comment);
-// };
+  const updateBook = (id, updatedBook) => {
+    setBooks(books.map(book => (book.id === id ? updatedBook : book)));
+};
+
+const handleEdit = (id, updatedAuthor) => {
+  setAuthors((prevAuthors) => 
+    prevAuthors.map(author => (author.id === id ? updatedAuthor : author))
+  );
+};
 
 // const handleAddRatings = (rating) => {
 //     console.log('Rating added:', rating);
 // };
 
-// const handleDeleteUserList = (id) => {
-//     console.log('Delete user list with id:', id);
+// const handleEdit = (edit) => {
+//     console.log('Edit author with name:', edit);
 // };
 
 
@@ -217,40 +226,25 @@ function App() {
 
   return (
     <ErrorBoundary>
-      <div className="App">
-        <Header />
-        <NavBar />
-        <h2>Selected Books</h2>
-        {onSelectedBooks.map((book) => (
-          <div key={book.id}>{book.title}</div>
-        ))}
-        <input
-          type="text"
-          placeholder="Search..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-         <Routes>
-          {/* Other Routes */}
-          <Route path="/books" element={
-            <BookContainer 
-              books={books}
-              onDeleteBook={onDeleteBook} 
-              addComments={addComments} 
-              comments={comments}
-              handleSelectedBook={handleSelectedBook} // Pass the selection handler
-            />
-          } />
-          {/* Other Routes */}
-        </Routes>
-        
+        <div className="App">
+          <Header />
+          <NavBar />
+          <h2>Selected Books</h2>
+          {onSelectedBooks.map((book) => (
+            <div key={book.id}>{book.title}</div>
+          ))}
+          <input
+            type="text"
+            placeholder="Search..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
         <Routes>
         <Route path="/" element={<Home />} />
-          <Route path="/library" element={<LibraryPage onDeleteBook={onDeleteBook} />} />
           <Route path="/author/new" element={<AuthorForm addAuthor={addAuthor} />} />
           <Route path="/author/:id" element={<AuthorDetail />} />
-          <Route path="/authors" element={<AuthorContainer authors={filteredAuthors} onDeleteAuthor={onDeleteAuthor} />} />
-          <Route path="/books" element={<BookContainer books={filteredBooks} onDeleteBook={onDeleteBook} addComments={addComments} comments={comments}/>} />
+          <Route path="/authors" element={<AuthorContainer authors={filteredAuthors} onDeleteAuthor={onDeleteAuthor} onEdit={handleEdit}/>} />
+          <Route path="/books" element={<BookContainer books={filteredBooks} onDeleteBook={onDeleteBook} addComments={addComments} comments={comments} addBook={addBook} updateBook={updateBook} onSelectedBook={handleSelectedBooks}/>} />
           <Route path="/book/new" element={<BookForm addBook={addBook} />} />
           <Route path="/book/:id" element={<BookDetail books={books}/> } />
           <Route path="/books/:bookid" element={<BookPage />} />
@@ -259,8 +253,10 @@ function App() {
           <Route path="/users" element={<UserContainer users={filteredUsers} onDeleteUser={onDeleteUser} />} />
           <Route path="/user/:id" element={<UserDetail />} />
           <Route path="/userList/new" element={<UserListForm addUserList={addUserList} />} />
-          <Route path="/userLists" element={<UserListContainer userLists={filteredUserLists} onDeleteUserList={onDeleteUserList} addComment={addComments} comments={comments} addRatings={addRatings} ratings={ratings} onSelectedBook={onSelectedBooks} books={books} users={users} />} />
+          <Route path="/userLists" element={<UserListContainer userLists={filteredUserLists} onDeleteUserList={onDeleteUserList} addComments={addComments} comments={comments} addRatings={addRatings} ratings={ratings} onSelectedBook={handleSelectedBooks} books={books} users={users} />} />
           <Route path="/userList/:id" element={<UserListDetail />} />
+          <Route path="/userList" element={<UserList />} />
+          <Route path="/userLists/:id/comments" element={<UserListComments />} />
           <Route path="/comment/new" element={<CommentForm addComments={addComments} />} />
           <Route path="/comments" element={<CommentContainer comments={filteredComments} onDeleteComment={onDeleteComment} />} />
           <Route path="/comment/:id" element={<CommentDetail />} />
@@ -268,7 +264,7 @@ function App() {
           <Route path="/library" element={<LibraryPage onDeleteBook={onDeleteBook} />} />
           <Route path="/" element={<Home />} />
         </Routes>
-      </div>
+        </div>
     </ErrorBoundary>
   );
 }

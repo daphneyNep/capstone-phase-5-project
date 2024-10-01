@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import React from "react";
 
 function UserListDetail() {
-    const [userList, setUserList] = useState({}); 
+    const [userList, setUserLists] = useState({}); 
     const [comment, setComment] = useState(""); 
     const [comments, setComments] = useState([]); 
     const [rate, setRate] = useState("");
@@ -14,14 +14,14 @@ function UserListDetail() {
     const { id } = useParams();
 
     useEffect(() => {
-        const fetchUserList = async () => {
+        const fetchUserLists = async () => {
             try {
                 const res = await fetch(`http://127.0.0.1:5555/userList/${id}`);
                 if (!res.ok) {
                     throw new Error("Failed to fetch");
                 }
                 const data = await res.json();
-                setUserList(data);
+                setUserLists(data);
             } catch (err) {
                 console.error("Failed to load userList data:", err);
                 setError("Failed to load userList data");
@@ -29,7 +29,7 @@ function UserListDetail() {
             }
         };
 
-        fetchUserList();
+        fetchUserLists();
     }, [id, navigate]);
 
     const { user_id, book_id, all_userLists = [] } = userList;
@@ -76,11 +76,11 @@ function UserListDetail() {
                 <section className="details">
                     <h3 style={{ margin: "16px auto" }}>User Lists</h3>
                     <ul className="userList">
-                        {all_userLists.map((u) => (
-                            <li key={u.id}>
+                        {all_userLists.map((ul) => (
+                            <li key={ul.id}>
                                 <div className="u-user">
-                                    <Link to={`/users/${u.id}`}>
-                                        <p style={{ fontStyle: "italic" }}>{u.name}</p>
+                                    <Link to={`/users/${ul.id}`}>
+                                        <p style={{ fontStyle: "italic" }}>{ul.name}</p>
                                     </Link>
                                 </div>
                             </li>

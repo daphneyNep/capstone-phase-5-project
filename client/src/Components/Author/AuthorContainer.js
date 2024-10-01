@@ -1,28 +1,16 @@
-import React from 'react';
-import AuthorCard from './AuthorCard';
-import PropTypes from 'prop-types';
+import React from "react";
+import AuthorCard from "./AuthorCard";
 
-const AuthorContainer = ({ authors = [], onDeleteAuthor }) => {
-    return (
-        <section>
-            <h1>Authors</h1>
-            <ul className='cards'>
-                {authors.map((author) => (
-                    <AuthorCard
-                        key={author.id}
-                        author={author}
-                        onDeleteAuthor={onDeleteAuthor} // Pass onDeleteAuthor function
-                        
-                    />
-                ))}
-            </ul>
-        </section>
-    );
-};
-
-AuthorContainer.propTypes = {
-    authors: PropTypes.array.isRequired, // Ensure authors is required
-    onDeleteAuthor: PropTypes.func.isRequired, // Ensure onDeleteAuthoris a function
+const AuthorContainer = ({ authors, onDeleteAuthor, onEdit, image_url }) => {
+  return (
+    <div>
+      {authors && authors.length > 0 ? (
+        <AuthorCard authors={authors} onDeleteAuthor={onDeleteAuthor} onEdit={onEdit} image_url={image_url} />
+      ) : (
+        <p>No authors available.</p>
+      )}
+    </div>
+  );
 };
 
 export default AuthorContainer;

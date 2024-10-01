@@ -3,20 +3,16 @@ import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
 
 const UserListCard = ({
-  userList,
-  user,
-  someProp = "Default Value",
+  userLists,
+  users={},
   onSelectedBook,
-  books = [],
+  books,
   onDeleteUserList,
   addComment,
   comments = [],
   addRatings = () => {},
   ratings = [],
 }) => {
-  // Move the console.log inside the component
-  
-
   const [newComment, setNewComment] = useState("");
   const [newRating, setNewRating] = useState("");
   const [selectedBook, setSelectedBook] = useState("");
@@ -24,36 +20,38 @@ const UserListCard = ({
   const handleCommentChange = (e) => setNewComment(e.target.value);
   const handleAddComment = () => {
     if (newComment.trim() === "") return;
-    addComment(userList.id, newComment);
+    addComment(userLists.id, newComment);
     setNewComment("");
   };
 
   const handleRatingChange = (e) => setNewRating(e.target.value);
   const handleAddRating = () => {
     if (newRating.trim() === "") return;
-    addRatings(userList.id, newRating);
+    addRatings(userLists.id, newRating);
     setNewRating("");
   };
 
   const handleOnDelete = () => {
-    onDeleteUserList(userList.id);
+    onDeleteUserList(userLists.id);
   };
 
   const handleOnSelectedBook = (e) => {
     setSelectedBook(e.target.value);
-    onSelectedBook(userList.id, e.target.value);
+    onSelectedBook(userLists.id, e.target.value);
   };
 
-  return (
-    <li className="userList-card">
-      <h2>{userList.user_id}</h2>
-      <p>{someProp}</p>
+  const selectedBookDetails = books.find((book) => book.id === Number(selectedBook));
+  const userToDisplay = Array.isArray(users) ? users[0] : users;
 
-      {user?.user_id ? (
-        <div className="user-card">
-          <h2>{`User ID: ${user.user_id}`}</h2>
-          <p>{`Username: ${user.username}`}</p>
-        </div>
+  return (
+    <li className="UserLists-card">
+      <h2>{userLists.userList}</h2>
+
+      {userToDisplay ? (
+        <>
+          <h2>{`User Id: ${userToDisplay.id}`}</h2>
+          <h2>{`User username: ${userToDisplay.username}`}</h2>
+        </>
       ) : (
         <p>No user data available</p>
       )}
@@ -68,14 +66,14 @@ const UserListCard = ({
         ))}
       </select>
 
-      {selectedBook && (
+      {selectedBook && selectedBookDetails && (
         <div className="selected-book-details">
           <h3>Selected Book:</h3>
           <img
-            src={books.find((book) => book.id === selectedBook)?.image_url}
+            src={selectedBookDetails.image_url}
             alt="Selected Book Cover"
           />
-          <p>{books.find((book) => book.id === selectedBook)?.title}</p>
+          <p>{selectedBookDetails.title}</p>
         </div>
       )}
 
@@ -84,8 +82,8 @@ const UserListCard = ({
         value={newComment}
         onChange={handleCommentChange}
         placeholder="Write a comment"
-        id={`comment-input-${userList.id}`}
-        name={`comment-${userList.id}`}
+        id={`comment-input-${userLists.id}`}
+        name={`comment-${userLists.id}`}
         autoComplete="off"
       />
       <button onClick={handleAddComment}>Add Comment</button>
@@ -94,19 +92,20 @@ const UserListCard = ({
       <h4>Comments</h4>
       <ul>
         {comments
-          .filter((comment) => comment.userListId === userList.id)
+          .filter((comment) => comment.userListId === userLists.id)
           .map((comment) => (
             <li key={comment.id}>{comment.content}</li>
           ))}
       </ul>
+      <Link to={`/userLists/${userLists.id}/comments`}>View Comments</Link>
 
       <input
         type="text"
         value={newRating}
         onChange={handleRatingChange}
         placeholder="Write a rating"
-        id={`rating-input-${userList.id}`}
-        name={`rating-${userList.id}`}
+        id={`rating-input-${userLists.id}`}
+        name={`rating-${userLists.id}`}
         autoComplete="off"
       />
       <button onClick={handleAddRating}>Add Ratings</button>
@@ -114,26 +113,19 @@ const UserListCard = ({
       <h4>Ratings</h4>
       <ul>
         {ratings
-          .filter((rating) => rating.userListId === userList.id)
+          .filter((rating) => rating.userListId === userLists.id)
           .map((rating) => (
             <li key={rating.id}>{rating.content}</li>
           ))}
       </ul>
-
-      <Link to={`/userLists/${userList.id}/comments`}>View Comments</Link>
-      <Link to={`/userLists/${userList.id}/ratings`}>View Ratings</Link>
     </li>
   );
 };
 
 UserListCard.propTypes = {
-  userList: PropTypes.object,
-  user: PropTypes.shape({
-    user_id: PropTypes.number,
-    username: PropTypes.string,
-  }),
-  someProp: PropTypes.string,
-  onSelectedBook: PropTypes.array.isRequired,
+  userLists: PropTypes.object.isRequired,
+  users: PropTypes.array.isRequired,
+  onSelectedBook: PropTypes.func.isRequired,
   onDeleteUserList: PropTypes.func.isRequired,
   addComment: PropTypes.func,
   comments: PropTypes.array,

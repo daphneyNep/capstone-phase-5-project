@@ -7,26 +7,20 @@ const UserList = () => {
     const [users, setUsers] = useState([]);
     const [error, setError] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
+    const [userList, setUserList] = useState([]);
 
-    useEffect(() => {
-        const fetchUsers = async () => {
-            try {
-                const response = await fetch('http://localhost:5555/users');
-                if (!response.ok) {
-                    throw new Error('Failed to fetch users');
-                }
-                const data = await response.json();
-                setUsers(data);
-                console.log(data); // Log fetched users
-                setError(null); // Clear error if fetch is successful
-            } catch (error) {
-                console.error('Error fetching users:', error);
-                setError('Failed to fetch users. Please try again later.');
-            }
-        };
-
-        fetchUsers(); // Fetch users on component mount
-    }, []);
+   
+        
+      
+        useEffect(() => {
+          const fetchUserList = async () => {
+            const response = await fetch('/api/userList'); // Adjust your API endpoint
+            const data = await response.json();
+            setUserList(data);
+          };
+      
+          fetchUserList();
+        }, []);
 
     const addUser = (newUser) => {
         setUsers((prevUsers) => [...prevUsers, newUser]); // Add new user to the list
@@ -57,6 +51,14 @@ const UserList = () => {
 
     return (
         <div>
+            {userList.map((user) => (
+                <UserCard 
+                key={user.id} 
+                userList={user} 
+                onDeleteUserList={handleDelete} 
+                onEdit={handleEdit} 
+              />
+            ))}
             <h1>User List</h1>
             {error && <div className="error">{error}</div>} {/* Display error message */}
             <Search onSearch={setSearchTerm} />

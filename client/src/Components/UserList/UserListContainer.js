@@ -3,35 +3,34 @@ import UserListCard from "./UserListCard"; // Import your UserListCard component
 import PropTypes from "prop-types";
 
 const UserListContainer = ({
-    userLists = [], // Default to an empty array if userLists is undefined
+    userLists = {}, // Default to an empty array if userLists is undefined
     onDeleteUserList,
-    onSelectedBook, // Use onSelectBook instead of onSelectedBook
     books = [], // Default to an empty array if books is undefined
     addComments,
     addRatings,
-    users // Receive the users prop
+    users= {}, // Default to an empty array if users is undefined
 }) => {
-    // Log the users data here
-    console.log(users); // This will log the users to the console when UserListContainer is rendered
-    console.log("onSelectedBook:", onSelectedBook);
+    console.log("Users data:", users);
 
+    const handleSelectedBook = (userListsId, bookId) => {
+        console.log(`UserLists ID: ${userListsId}, Book ID: ${bookId}`);
+        // Your logic here
+    };
 
     return (
         <section>
             <h1>Users</h1>
             <ul className='cards'>
-                {userLists.map((userList) => (
+                {userLists.map((userLists) => (
                     <UserListCard
-                        key={userList.id} // Ensure key is unique
-                        userList={userList} // Pass the entire userList object
-                        users={users} // Pass the users to UserListCard if needed
-                        onSelectedBook={onSelectedBook} // Pass the renamed function
-                        onDeleteUserList={onDeleteUserList} // Pass onDeleteUserList function
-                        books={books} // Pass the list of books
-                        addComments={addComments} // Pass the addComment function
-                        addRatings={addRatings} // Corrected from addRating to addRatings
-                        comments={[]} // Pass comments if applicable
-                        ratings={[]} // Pass ratings if applicable
+                        key={userLists.id} // Use unique key for each userList
+                        userLists={userLists} // Pass individual userList, not the entire array
+                        users={users}
+                        books={books}
+                        onSelectedBook={handleSelectedBook} // Ensure this prop is used correctly
+                        onDeleteUserList={onDeleteUserList}
+                        addComment={addComments} // Ensure prop name matches with UserListCard
+                        addRatings={addRatings}
                     />
                 ))}
             </ul>
@@ -40,9 +39,8 @@ const UserListContainer = ({
 };
 
 UserListContainer.propTypes = {
-    userLists: PropTypes.array.isRequired, // Ensure userLists is required
+    userLists: PropTypes.array.isRequired, // Expecting userLists to be an array, not an object
     onDeleteUserList: PropTypes.func.isRequired, // Ensure onDeleteUserList is a function
-    onSelectedBook: PropTypes.array.isRequired, // Ensure onSelectBook is required
     books: PropTypes.array.isRequired, // Ensure books is required
     addComments: PropTypes.func.isRequired, // Ensure addComments is required
     addRatings: PropTypes.func.isRequired, // Ensure addRatings is required

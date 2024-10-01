@@ -28,7 +28,7 @@ function UserListForm() {
         validationSchema: schema,
         onSubmit: (values) => {
             console.log("Submitting userList data:", values);
-            fetch("http://127.0.0.1:5555/List", {
+            fetch("http://127.0.0.1:5555/list", {
                 method: "POST",
                 body: JSON.stringify(values),
                 headers: { 'Content-Type': 'application/json' }

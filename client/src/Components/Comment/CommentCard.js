@@ -7,7 +7,7 @@ const CommentCard = ({ comment, onDeleteComment }) => {
   return (
     <div>
       <h3>{comment.title || "Untitled Comment"}</h3> {/* Fallback title */}
-      <img src={comment.image_url || "default-image.jpg"} alt="Comment" />
+      <img src={comment.image_url || "/default-image.jpg"} alt="Comment" />
       <p>{comment.content}</p>
       <button onClick={() => onDeleteComment(comment.id)}>Delete Comment</button>
     </div>

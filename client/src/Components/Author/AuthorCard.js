@@ -1,32 +1,34 @@
 import React from "react";
-import { Link } from 'react-router-dom';
-import PropTypes from 'prop-types';
+import PropTypes from "prop-types";
 
-const AuthorCard = ({ author, onDeleteAuthor }) => {
+const AuthorCard = ({ authors = [], onDeleteAuthor, onEdit }) => {
   return (
     <div className="author-card">
-      {author.image_url && (
-        <img src={author.image_url} alt={`${author.author_name || 'Unknown Author'}'s portrait`} />
-      )}
-      <h3>
-        <Link to={`/authors/${author.id}`}>{author.author_name || 'Unknown Author'}</Link>
-      </h3>
-      <p>{author.author_genre || 'Unknown Genre'}</p>
-      <p>{author.bio || 'No bio available.'}</p>
-      <button onClick={() => onDeleteAuthor(author.id)}>Delete</button>
+      {authors.map((author) => (
+        <div key={author.id} className="author">
+          {/* Display the author's image */}
+          {author.image_url && (
+            <img src={author.image_url} alt={author.name} className="author-image" style={{
+              width: "100px",
+              height: "auto",
+              borderRadius: "50%",
+              marginBottom: "10px"
+            }}
+          />
+          )}
+          <h3>{author.name}</h3>
+          <button onClick={() => onEdit(author)}>Edit</button>
+          <button onClick={() => onDeleteAuthor(author.id)}>Delete</button>
+        </div>
+      ))}
     </div>
   );
 };
 
 AuthorCard.propTypes = {
-  author: PropTypes.shape({
-    id: PropTypes.number.isRequired,
-    author_name: PropTypes.string.isRequired,
-    author_genre: PropTypes.string,
-    bio: PropTypes.string,
-    image_url: PropTypes.string,
-  }).isRequired,
+  authors: PropTypes.array.isRequired,
   onDeleteAuthor: PropTypes.func.isRequired,
+  onEdit: PropTypes.func.isRequired,
 };
 
 export default AuthorCard;

@@ -1,42 +1,138 @@
-import React, { useState } from "react";
-// import PropTypes from "prop-types";
-// import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import PropTypes from 'prop-types';
 
-const BookCard = ({ book, onAddToUserList, onDeleteBook, comments = [], addComment }) => {
-  const [newComment, setNewComment] = useState('');
+const BookCard = ({ book, onDeleteBook, updateBook, addComments, comments }) => {
+    const [isEditing, setIsEditing] = useState(false);
+    const [updatedBook, setUpdatedBook] = useState(book);
+    const [newComment, setNewComment] = useState(""); // State to handle new comment input
+    const [showComments, setShowComments] = useState(false); // State to track whether comments are visible
 
-  const handleAddComment = () => {
-    if (newComment.trim() === '') return;
-    addComment(book.id, newComment);
-    setNewComment('');
-  };
+    const handleEdit = () => {
+        setIsEditing(!isEditing);
+    };
 
-  return (
-    <li className="book-card">
-      <h2>{book.title} by {book.author}</h2>
-      <p>{book.genre}</p>
-      <p>{book.summary}</p>
-      {book.image_url && <img src={book.image_url} alt={book.title} width="150" />}
-      
-      <button onClick={() => onAddToUserList(book.id)}>Add to My List</button>
+    const handleUpdate = (e) => {
+        e.preventDefault();
+        updateBook(updatedBook); // Call the updateBook function
+        setIsEditing(false);
+    };
 
-      <input
-        type="text"
-        value={newComment}
-        onChange={e => setNewComment(e.target.value)}
-        placeholder="Write a comment"
-      />
-      <button onClick={handleAddComment}>Add Comment</button>
+    const handleChange = (e) => {
+        setUpdatedBook({
+            ...updatedBook,
+            [e.target.name]: e.target.value,
+        });
+    };
 
-      <button onClick={() => onDeleteBook(book.id)}>Delete Book</button>
+    const handleCommentChange = (e) => {
+        setNewComment(e.target.value); // Update newComment state
+    };
 
-      <ul>
-        {comments.map(comment => (
-          <li key={comment.id}>{comment.content}</li>
-        ))}
-      </ul>
-    </li>
-  );
+    const handleAddComment = (e) => {
+        e.preventDefault();
+        if (newComment.trim()) {
+            addComments({ bookId: book.id, content: newComment }); // Call the addComments function with the new comment
+            setNewComment(""); // Reset the input field after adding the comment
+        }
+    };
+
+    const toggleComments = () => {
+        setShowComments(!showComments); // Toggle the visibility of the comments
+    };
+
+    return (
+        <li className="card">
+            {isEditing ? (
+                <form onSubmit={handleUpdate}>
+                    <input
+                        type="text"
+                        name="title"
+                        value={updatedBook.title}
+                        onChange={handleChange}
+                        required
+                    />
+                    <input
+                        type="text"
+                        name="author"
+                        value={updatedBook.author}
+                        onChange={handleChange}
+                        required
+                    />
+                    <input
+                        type="text"
+                        name="image_url"
+                        value={updatedBook.image_url}
+                        onChange={handleChange}
+                        placeholder="Image URL"
+                    />
+                    <button type="submit">Save</button>
+                </form>
+            ) : (
+                <>
+                    <h2>{book.title}</h2>
+                    <p>Author: {book.author}</p>
+                    {book.image_url && <img src={book.image_url} alt={book.title} style={{ width: '100px', height: '150px' }} />}
+                    <button onClick={handleEdit}>Edit</button>
+                    <button onClick={() => onDeleteBook(book.id)}>Delete</button>
+                </>
+            )}
+
+            {/* View/Hide Comments link */}
+            <button onClick={toggleComments}>
+                {showComments ? 'Hide Comments' : 'View Comments'}
+            </button>
+
+            {/* Conditionally render the comments section */}
+            {showComments && (
+                <>
+                    <h3>Comments</h3>
+                    <ul>
+                        {comments && comments.length > 0 ? (
+                            comments.map(comment => (
+                                comment.id && comment.content ? (
+                                    <li key={comment.id}>{comment.content}</li>
+                                ) : null // Only render comments that have valid id and content
+                            ))
+                        ) : (
+                            <p>No comments available</p>
+                        )}
+                    </ul>
+
+                    {/* Form to add a new comment */}
+                    <form onSubmit={handleAddComment}>
+                        <input
+                            type="text"
+                            name="newComment"
+                            value={newComment}
+                            onChange={handleCommentChange}
+                            placeholder="Add a comment"
+                            required
+                        />
+                        <button type="submit">Add Comment</button>
+                    </form>
+                </>
+            )}
+        </li>
+    );
+};
+
+// Define PropTypes
+BookCard.propTypes = {
+    book: PropTypes.shape({
+        id: PropTypes.number.isRequired,
+        title: PropTypes.string.isRequired,
+        author: PropTypes.string.isRequired,
+        image_url: PropTypes.string, // image_url is optional
+    }).isRequired,
+    onDeleteBook: PropTypes.func.isRequired,
+    updateBook: PropTypes.func.isRequired,
+    addComments: PropTypes.func.isRequired, // Function to add comments
+    comments: PropTypes.arrayOf(
+        PropTypes.shape({
+            id: PropTypes.number, // Make id optional
+            content: PropTypes.string.isRequired,
+        })
+    ).isRequired, // Comments must be an array of objects
 };
 
 export default BookCard;
