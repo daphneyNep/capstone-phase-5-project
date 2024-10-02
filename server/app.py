@@ -9,6 +9,13 @@ from flask_sqlalchemy import SQLAlchemy
 
 from sqlalchemy.exc import SQLAlchemyError
 
+# @app.after_request
+# def add_cors_headers(response):
+#     response.headers.add('Access-Control-Allow-Origin', 'http://localhost:3000')
+#     response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+#     response.headers.add('Access-Control-Allow-Methods', 'GET,POST,PATCH,DELETE,OPTIONS')
+#     return response
+
 
 
 logging.basicConfig(level=logging.INFO)
@@ -193,34 +200,64 @@ def get_books():
     return jsonify(books), 200
 
 # Route to handle GET and POST for a single book
-@app.route('/book', methods=['POST'])
-def create_book():
+@app.route('/book/<int:book_id>/comments', methods=['POST'])
+def add_comment(book_id):
+    data = request.get_json()
+    
+    # Validate incoming data
+    if not data or 'content' not in data:
+        return jsonify({"error": "Invalid input, content is required"}), 400
+
     try:
-        # Get JSON data from the request
-        data = request.get_json()
-
-        # Validate the required fields are present
-        if 'title' not in data:
-            return jsonify({'error': 'Bad request, title is required'}), 400
-
-        # Create a new book instance using the provided data
-        new_book = Book(
-            title=data['title'],
-            summary=data.get('summary', ''),
-            image_url=data.get('image_url'),
-            author_id=data.get('author_id')
+        # Create a new comment
+        new_comment = Comment(
+            content=data['content'],
+            book_id=book_id  # Link the comment to the book
         )
-        # Add the new book to the session and commit the changes
-        db.session.add(new_book)
+        
+        db.session.add(new_comment)
         db.session.commit()
-
-        # Return the created book with a 201 Created response
-        return jsonify(new_book.to_dict()), 201
+        
+        return jsonify({"message": "Comment added", "data": {"id": new_comment.id, "content": new_comment.content}}), 201
     except Exception as e:
-        # Rollback the session in case of an error
-        db.session.rollback()
-        print(f"Error occurred during POST: {e}")
-        return jsonify({'error': 'Internal Server Error'}), 500
+        print(f"Error adding comment: {e}")
+        return jsonify({"error": "Internal Server Error"}), 500
+    
+@app.route('/book', methods=['POST', 'OPTIONS'])
+def create_book():
+    if request.method == 'OPTIONS':
+        # Respond to preflight request
+        return _build_cors_preflight_response()
+    # Handle the actual POST request here
+    data = request.json
+    # Process book creation logic here
+    return jsonify({'message': 'Book created successfully', 'id': 1})
+
+@app.route('/book/<int:id>', methods=['PATCH', 'OPTIONS'])
+def update_book(id):
+    if request.method == 'OPTIONS':
+        # Respond to preflight request
+        return _build_cors_preflight_response()
+    # Handle the actual PATCH request here
+    data = request.json
+    # Process book update logic here
+    return jsonify({'message': 'Book updated successfully'})
+
+def _build_cors_preflight_response():
+    response = jsonify()
+    response.headers.add('Access-Control-Allow-Origin', 'http://localhost:3000')
+    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+    response.headers.add('Access-Control-Allow-Methods', 'GET,POST,PATCH,DELETE,OPTIONS')
+    return response
+    
+    
+@app.route('/book/<int:id>', methods=['GET'])
+def get_book(id):
+    book = Book.query.get(id)
+    if book is None:
+        return jsonify({"error": "Book not found"}), 404
+    
+    return jsonify(book.to_dict()) 
     
 @app.route('/book/<int:id>', methods=['DELETE'])
 def delete_book(id):
@@ -230,6 +267,28 @@ def delete_book(id):
     db.session.delete(book)
     db.session.commit()
     return jsonify({"message": "Book deleted successfully"}), 200
+
+@app.route('/user_list/<int:user_list_id>/add_book', methods=['POST'])
+def add_book_to_user_list(user_list_id):
+    user_list = UserList.query.get(user_list_id)
+    if user_list is None:
+        return jsonify({'error': 'UserList not found'}), 404
+
+    data = request.get_json()
+    if not data or 'book_id' not in data:
+        return jsonify({'error': 'Bad request, book_id is required'}), 400
+
+    book_id = data['book_id']
+    book = Book.query.get(book_id)
+    if book is None:
+        return jsonify({'error': 'Book not found'}), 404
+
+    # Here you can manage the logic of adding the book to the user list
+    user_list.books.append(book)  # Assuming you have a relationship set up
+    db.session.commit()
+    return jsonify({'message': 'Book added to user list'}), 201
+
+
 
 
 @app.route('/user/<int:id>', methods=['GET', 'DELETE'])
@@ -298,7 +357,7 @@ def userlist_by_id(id):
         return jsonify({'message': 'UserList deleted successfully'}), 200
 
 @app.route('/user_list/<int:user_list_id>/add_book', methods=['POST'])
-def add_book_to_user_list(user_list_id):
+def add_book_to_user_list_v2(user_list_id):  # Renamed function
     data = request.json
     book_id = data.get('book_id')
 
@@ -313,51 +372,60 @@ def add_book_to_user_list(user_list_id):
     db.session.commit()
 
     return jsonify({'message': 'Book added to UserList successfully'}), 200
+
+@app.route('/routes', methods=['GET'])
+def show_routes():
+    routes = []
+    for rule in app.url_map.iter_rules():
+        routes.append(f"{rule.endpoint}: {rule.methods} -> {rule.rule}")
+    return jsonify(routes)
     
-@app.route('/comment', methods=['GET'])
-def get_comments():
-    comments = Comment.query.all()  # Replace with your logic to fetch comments
-    return jsonify([comment.to_dict() for comment in comments])
+@app.route('/comments', methods=['GET', 'POST'])
+def handle_comments():
+    if request.method == 'GET':
+        # Fetch comments from the database (Example logic)
+        comments = [
+            {"id": 1, "content": "Great post!", "image_url": "https://th.bing.com/th/id/OIP.5QFMUWxvMdJFjr85wIw4egAAAA?rs=1&pid=ImgDetMain"},
+            {"id": 2, "content": "Interesting read.", "image_url": "https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1568095430l/53030953.jpg"},
+            {"id": 3, "content": "Interesting read.", "image_url":"https://oregairu.b-cdn.net/wp-content/uploads/2024/09/the-humble-familys-daughter-has-a-spatial-pocket-193x278.jpg"},
+            {"id": 4, "content": "Interesting read.", "image_url":"https://oregairu.b-cdn.net/wp-content/uploads/2024/09/the-humble-familys-daughter-has-a-spatial-pocket-193x278.jpg"},
+            {"id": 5, "content": "Interesting read.", "image_url":"https://th.bing.com/th/id/OIP.PJ0PyRXOXD-2gqlfs4RG-wHaHa?rs=1&pid=ImgDetMain"},
+            {"id": 6, "content": "Interesting read.", "image_url":"https://th.bing.com/th/id/OIP.GUXcERCo2_MQ_SnLrkvz7AAAAA?rs=1&pid=ImgDetMain"},
+        ]
+
+        return jsonify(comments), 200  # Return the list of comments
+
+    elif request.method == 'POST':
+        data = request.get_json()  # Get JSON data from the request
+        try:
+            # Create a new Comment instance using the provided data
+            new_comment = Comment(
+                content=data['content'],
+                user_id=data['user_id'],
+                book_id=data['book_id']
+            )
+
+            # Add the new comment to the session and commit the changes
+            db.session.add(new_comment)
+            db.session.commit()
+
+            # Return the created comment with a 201 Created response
+            return jsonify(new_comment.to_dict()), 201
+
+        except SQLAlchemyError as e:
+            # Rollback the session in case of a database error
+            db.session.rollback()
+            logging.error(f"Error occurred during POST /comments: {e}", exc_info=True)
+            return jsonify({'error': 'Internal Server Error'}), 500
+
+        except Exception as e:
+            logging.error(f"Unexpected error: {e}", exc_info=True)
+            return jsonify({'error': 'Internal Server Error'}), 500
 
 @app.route('/test', methods=['GET'])
 def test():
     return 'Test route is working!'
 
-
-@app.route('/comments', methods=['POST'])
-def create_comment():
-    try:
-        # Get the JSON data from the request
-        data = request.get_json()
-
-        # Validate that the required fields are present
-        required_fields = ['content', 'user_id', 'book_id']
-        if not all(field in data for field in required_fields):
-            return jsonify({'error': 'Bad request, content, user_id, and book_id are required'}), 400
-
-        # Create a new Comment instance using the provided data
-        new_comment = Comment(
-            content=data['content'],
-            user_id=data['user_id'],
-            book_id=data['book_id']
-        )
-
-        # Add the new comment to the session and commit the changes
-        db.session.add(new_comment)
-        db.session.commit()
-
-        # Return the created comment with a 201 Created response
-        return jsonify(new_comment.to_dict()), 201
-
-    except SQLAlchemyError as e:
-        # Rollback the session in case of a database error
-        db.session.rollback()
-        logging.error(f"Error occurred during POST /comments: {e}", exc_info=True)
-        return jsonify({'error': 'Internal Server Error'}), 500
-
-    except Exception as e:
-        logging.error(f"Unexpected error: {e}", exc_info=True)
-        return jsonify({'error': 'Internal Server Error'}), 500
 
 @app.route('/comments/<int:comment_id>', methods=['PUT'])
 def update_comment(comment_id):

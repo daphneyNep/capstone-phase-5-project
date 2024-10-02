@@ -151,26 +151,28 @@ def create_comments(user_ids):
                 "image_url": "https://ik.imagekit.io/storybird/images/e2307839-0815-49f5-b883-10b480005981/0_985319130.png"
             }
         }
-        
+
         comments = []
         for title, book_info in books_with_comments.items():
             book = book_info["book"]
             image_url = book_info["image_url"]
-            
+
             if book:  # Ensure the book exists before creating comments
                 for user_id in user_ids:
-                    # Add the image_url for each comment (if available)
-                    comments.append(Comment(
-                        book_id=book.id,
-                        content=f"Comment: {title}.",
-                        user_id=user_id,
-                        image_url=image_url
-                    ))
+                    # Check if a comment already exists for the given user and book
+                    existing_comment = Comment.query.filter_by(book_id=book.id, user_id=user_id).first()
+                    if not existing_comment:
+                        # Add the image_url for each comment (if available)
+                        comments.append(Comment(
+                            book_id=book.id,
+                            content=f"Comment: {title}.",
+                            user_id=user_id,
+                            image_url=image_url
+                        ))
 
         # Save the comments to the database
         db.session.bulk_save_objects(comments)
         db.session.commit()
-
 def create_user_lists():
     with app.app_context():
         # Assuming you already have users and books created

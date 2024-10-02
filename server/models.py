@@ -20,6 +20,7 @@ class Book(db.Model, SerializerMixin):
     title = db.Column(db.String, nullable=False)
     summary = db.Column(db.String, nullable=False)
     image_url = db.Column(db.String, nullable=True)
+    comment = db.Column(db.String, nullable=True)
 
     # Relationships
     author = db.relationship('Author', back_populates='books')
@@ -38,11 +39,12 @@ class Book(db.Model, SerializerMixin):
             'title': self.title,
             'summary': self.summary,
             'image_url': self.image_url,
-            'author': self.author.to_dict(only=('title', 'name')) if self.author else None
+            'comment': self.comment,
+            'author': self.author.to_dict(only=('title', 'name', 'image_url')) if self.author else None
         }
 
     def __repr__(self):
-        return f'<Book {self.id}, {self.title}, {self.author_id}, {self.summary}, {self.image_url} >'
+        return f'<Book {self.id}, {self.title}, {self.author_id}, {self.summary}, {self.image_url} {self.comment} >'
 
 
 class Author(db.Model, SerializerMixin):
@@ -53,6 +55,7 @@ class Author(db.Model, SerializerMixin):
     genre = db.Column(db.String)
     bio = db.Column(db.Text)
     image_url = db.Column(db.String)  # Field for image URL
+    title = db.Column(db.String)
 
     # One-to-Many relationship: An author has many books
     books = db.relationship('Book', back_populates='author')
@@ -60,8 +63,16 @@ class Author(db.Model, SerializerMixin):
     # Fields to serialize
     serialize_rules = ('-books.author',)  # Exclude recursive serialization of book
 
+    def to_dict(self, only=None):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'title': self.title,  # Make sure this exists if you're using it
+            'image_url':self.image_url
+        }
+
     def __repr__(self):
-        return f'<Author {self.id}, {self.name}, {self.genre}, {self.bio} >'
+        return f'<Author {self.id}, {self.name}, {self.genre}, {self.bio} {self.title} {self.image_url} >'
 
 
 class User(db.Model, SerializerMixin):
