@@ -1,12 +1,12 @@
-import React, { useState } from "react"; 
+import React, { useState } from "react";
 import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
 
 const UserListCard = ({
-  userLists,
-  users={},
+  userLists = [],
+  user, // Expect a single user object, not an array
   onSelectedBook,
-  books,
+  books = [],
   onDeleteUserList,
   addComment,
   comments = [],
@@ -41,22 +41,20 @@ const UserListCard = ({
   };
 
   const selectedBookDetails = books.find((book) => book.id === Number(selectedBook));
-  const userToDisplay = Array.isArray(users) ? users[0] : users;
 
   return (
     <li className="UserLists-card">
       <h2>{userLists.userList}</h2>
 
-      {userToDisplay ? (
+      {user ? (
         <>
-          <h2>{`User Id: ${userToDisplay.id}`}</h2>
-          <h2>{`User username: ${userToDisplay.username}`}</h2>
+          <h2>{`User Id: ${user.id}`}</h2>
+          <h2>{`User username: ${user.username}`}</h2>
         </>
       ) : (
         <p>No user data available</p>
       )}
 
-      {/* Book selection */}
       <select value={selectedBook} onChange={handleOnSelectedBook}>
         <option value="">Select a book</option>
         {books.map((book) => (
@@ -72,6 +70,7 @@ const UserListCard = ({
           <img
             src={selectedBookDetails.image_url}
             alt="Selected Book Cover"
+            style={{ width: '100px', height: '150px' }}
           />
           <p>{selectedBookDetails.title}</p>
         </div>
@@ -123,15 +122,13 @@ const UserListCard = ({
 };
 
 UserListCard.propTypes = {
-  userLists: PropTypes.object.isRequired,
-  users: PropTypes.array.isRequired,
-  onSelectedBook: PropTypes.func.isRequired,
-  onDeleteUserList: PropTypes.func.isRequired,
-  addComment: PropTypes.func,
-  comments: PropTypes.array,
-  addRatings: PropTypes.func,
-  ratings: PropTypes.array,
-  books: PropTypes.array,
+    userLists: PropTypes.array, // Make sure this matches the type being passed
+    user: PropTypes.object.isRequired,
+    books: PropTypes.array.isRequired,
+    onSelectedBook: PropTypes.func.isRequired,
+    onDeleteUserList: PropTypes.func.isRequired,
+    addComment: PropTypes.func.isRequired,
+    addRatings: PropTypes.func.isRequired,
 };
 
 export default UserListCard;

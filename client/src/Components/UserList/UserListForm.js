@@ -1,9 +1,9 @@
-import { useNavigate } from "react-router-dom";
+import React from "react";
 import { useFormik } from "formik";
 import * as yup from "yup";
-import React from "react";
+import { useNavigate } from "react-router-dom";
 
-function UserListForm() {
+const UserListForm = ({ addUserList, uniqueId }) => {
     const navigate = useNavigate();
 
     // Create schema for form validation
@@ -22,9 +22,8 @@ function UserListForm() {
         initialValues: {
             book_id: '',
             user_id: '',
-            rating: '', // Initialize rating
+            rating: '',
         },
-
         validationSchema: schema,
         onSubmit: (values) => {
             console.log("Submitting userList data:", values);
@@ -41,6 +40,7 @@ function UserListForm() {
                 }
             })
             .then(data => {
+                addUserList(data); // Add the newly created userList to the parent component's state
                 navigate(`/userList/${data.id}`); // Navigate to the newly created user list
             })
             .catch(error => {
@@ -53,40 +53,43 @@ function UserListForm() {
     return (
         <section>
             <form onSubmit={formik.handleSubmit} className="form">
-                <label>book_id</label>
+                <label htmlFor={`book_id-${uniqueId}`}>Book ID</label>
                 <input
                     type="number"
+                    id={`book_id-${uniqueId}`} // Unique ID for book_id
                     name="book_id"
                     onChange={formik.handleChange}
-                    value={formik.values.book_id} // Correct the field name
+                    value={formik.values.book_id}
                 />
                 {formik.errors.book_id && formik.touched.book_id && (
                     <h3 style={{ color: "red" }}>{formik.errors.book_id}</h3>
                 )}
 
-                <label>user_id</label>
+                <label htmlFor={`user_id-${uniqueId}`}>User ID</label>
                 <input
                     type="number"
+                    id={`user_id-${uniqueId}`} // Unique ID for user_id
                     name="user_id"
                     onChange={formik.handleChange}
-                    value={formik.values.user_id} // Correct the field name
+                    value={formik.values.user_id}
                 />
                 {formik.errors.user_id && formik.touched.user_id && (
                     <h3 style={{ color: "red" }}>{formik.errors.user_id}</h3>
                 )}
 
-                <label>rating</label>
+                <label htmlFor={`rating-${uniqueId}`}>Rating</label>
                 <input
                     type="number"
+                    id={`rating-${uniqueId}`} // Unique ID for rating
                     name="rating"
                     onChange={formik.handleChange}
-                    value={formik.values.rating} // Ensure value is connected to formik state
+                    value={formik.values.rating}
                 />
                 {formik.errors.rating && formik.touched.rating && (
                     <h3 style={{ color: "red" }}>{formik.errors.rating}</h3>
                 )}
 
-                <input className="button" type="submit" />
+                <input className="button" type="submit" value="Add User List" />
             </form>
         </section>
     );

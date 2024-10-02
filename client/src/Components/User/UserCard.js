@@ -1,19 +1,28 @@
 import React from "react";
+import PropTypes from "prop-types"; // Make sure to import PropTypes
 
-const UserCard = ({ users, onDeleteUser, onEdit, username, password }) => {
-  if (!users) {
-    return null; // or return a loading state/message
+const UserCard = ({ user, handleDeleteUser, handleEditUser }) => {
+  if (!user) {
+    return null; // Handle loading state if needed
   }
 
   return (
-    <div className="user-card">
-      <h3>{users}</h3>
-      <p>{username}</p>
-      <p>{password}</p>
-      <button onClick={() => onEdit(users)}>Edit</button>
-      <button onClick={() => onDeleteUser(users.id)}>Delete</button>
+    <div className="user-card" id={`user-${user.id}`} name={user.username}>
+      <h3>{user.username}</h3>
+      <button onClick={() => handleEditUser(user)}>Edit</button>
+      <button onClick={() => handleDeleteUser(user.id)}>Delete</button>
     </div>
   );
+};
+
+// Define prop types for type checking
+UserCard.propTypes = {
+  user: PropTypes.shape({
+    id: PropTypes.number.isRequired,
+    username: PropTypes.string.isRequired,
+  }).isRequired,
+  handleDeleteUser: PropTypes.func.isRequired,
+  handleEditUser: PropTypes.func.isRequired,
 };
 
 export default UserCard;

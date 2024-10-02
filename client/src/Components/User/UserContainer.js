@@ -1,29 +1,19 @@
-import React from 'react';
-import UserCard from './UserCard';
-import PropTypes from 'prop-types';
+import React from "react";
+import UserCard from "./UserCard"; // Adjust the import based on your file structure
 
-const UserContainer = ({ users = [], onDeleteUser }) => {
-    
-    return (
-        <section>
-            <h1>Users</h1>
-            <ul className='cards'>
-                {users.map((user) => (
-                    <UserCard
-                        key={user.id}
-                        user={user}
-                        onDeleteUser={onDeleteUser} // Pass onDeleteUser function
-                        
-                    />
-                ))}
-            </ul>
-        </section>
-    );
-};
-
-UserContainer.propTypes = {
-    users: PropTypes.array.isRequired, // Ensure users is required
-    onDeleteUser: PropTypes.func.isRequired, // Ensure onDeleteUser is a function
+const UserContainer = ({ users, handleDeleteUser, handleEditUser }) => {
+  return (
+    <div>
+      {users.map((user) => (
+        <UserCard 
+          key={user.id}  // Ensure a unique key prop for each UserCard
+          user={user} 
+          handleDeleteUser={handleDeleteUser} 
+          handleEditUser={handleEditUser} 
+        />
+      ))}
+    </div>
+  );
 };
 
 export default UserContainer;

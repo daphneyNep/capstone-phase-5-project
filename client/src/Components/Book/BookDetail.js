@@ -1,29 +1,33 @@
-import { useParams, Link, useNavigate } from "react-router-dom"; // Ensure you import useNavigate and useParams
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import React from "react";
 
 function BookDetail() {
     const [book, setBook] = useState({});
-    const [comment, setComment] = useState(""); // State for the new comment
-    const [comments, setComments] = useState([]); // State for the list of comments
+    const [comment, setComment] = useState("");
+    const [comments, setComments] = useState([]);
     const [error, setError] = useState(null);
-    const navigate = useNavigate(); // Initialize navigate
-    const { id } = useParams(); // Use 'id' from useParams
+    const navigate = useNavigate();
+    const { id } = useParams();
 
     useEffect(() => {
-        fetch(`http://127.0.0.1:5555/book/${id}`)
-            .then(res => {
-                if (res.ok) {
-                    return res.json();
-                } else {
+        const fetchBook = async () => {
+            try {
+                const response = await fetch(`http://127.0.0.1:5555/book/${id}`);
+                if (!response.ok) {
                     throw new Error("Failed to fetch");
                 }
-            })
-            .then(data => setBook(data))
-            .catch(() => {
+                const data = await response.json();
+                setBook(data);
+                // Assuming your API provides comments related to the book
+                setComments(data.comments || []); // Adjust based on your data structure
+            } catch (err) {
                 setError("Failed to load book data");
-                navigate("/not-found"); // Redirect to /not-found on error
-            });
+                navigate("/not-found");
+            }
+        };
+        
+        fetchBook();
     }, [id, navigate]);
 
     const { author_id, title, summary, image_url, all_books = [] } = book;
@@ -32,23 +36,41 @@ function BookDetail() {
         setComment(e.target.value);
     };
 
-    const handleCommentSubmit = (e) => {
+    const handleCommentSubmit = async (e) => {
         e.preventDefault();
         if (comment.trim()) {
-            setComments([...comments, comment]);
-            setComment(""); // Clear the input field after submitting
+            const newComment = { content: comment, bookId: id }; // Adjust the object structure based on your API's requirements
+
+            try {
+                const response = await fetch(`http://127.0.0.1:5555/book/${id}/comments`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(newComment),
+                });
+
+                if (!response.ok) {
+                    throw new Error("Failed to submit comment");
+                }
+
+                const addedComment = await response.json();
+                setComments((prevComments) => [...prevComments, addedComment]);
+                setComment("");
+            } catch (err) {
+                setError("Failed to submit comment");
+            }
         }
     };
 
     if (error) {
-        return <div>Error: {error}</div>; // Display error message
+        return <div>Error: {error}</div>;
     }
 
     return (
         <div className="book-detail" author_id={id}>
             <h1>{title}</h1>
             <p>{summary}</p>
-
             <div className="book-card">
                 <figure className="image_url">
                     <img src={image_url} alt={author_id} />
@@ -73,7 +95,6 @@ function BookDetail() {
                     </ul>
                 </section>
             </div>
-
             <section className="comments">
                 <h2>Submit your comment!</h2>
                 <form onSubmit={handleCommentSubmit}>
@@ -88,7 +109,7 @@ function BookDetail() {
                 </form>
                 <ul>
                     {comments.map((com, index) => (
-                        <li key={index}>{com}</li>
+                        <li key={index}>{com.content || com}</li> // Adjust based on your comment structure
                     ))}
                 </ul>
             </section>

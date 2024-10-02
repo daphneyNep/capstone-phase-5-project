@@ -30,6 +30,9 @@ function NavBar() {
           <Link to="/author/new">Add New Author</Link>
         </li>
         <li>
+          <Link to="/library">User Book List</Link>
+        </li>
+        <li>
           <Link to="/user/new">Login</Link>
         </li>
       </ul>

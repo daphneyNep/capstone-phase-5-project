@@ -14,15 +14,15 @@ const BookContainer = ({ books = [], onDeleteBook, addBook, updateBook, addComme
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        addBook(newBook); // Call the passed addBook function to create a new book
-        setNewBook({ title: '', author: '' }); // Reset form after submission
+        addBook(newBook); // Ensure addBook adds an id
+        setNewBook({ title: '', author: '' });
     };
+
+    console.log(books); // Debugging line
 
     return (
         <section>
             <h1>Books</h1>
-            
-            {/* Form to add a new book */}
             <form onSubmit={handleSubmit}>
                 <input
                     type="text"
@@ -44,27 +44,33 @@ const BookContainer = ({ books = [], onDeleteBook, addBook, updateBook, addComme
             </form>
 
             <ul className="cards">
-                {books.map((book) => (
-                    <BookCard
-                        key={book.id}
-                        book={book}
-                        onDeleteBook={onDeleteBook}
-                        addComments={addComments}
-                        updateBook={updateBook}
-                        comments={comments.filter(comment => comment.bookId === book.id)}
-                    />
-                ))}
+                {books.map((book) => {
+                    console.log(book); // Debugging line
+                    if (!book.id) {
+                        console.warn('Book without an id:', book);
+                        return null; // Skip rendering this book if id is undefined
+                    }
+                    return (
+                        <BookCard
+                            key={book.id}
+                            book={book}
+                            onDeleteBook={onDeleteBook}
+                            addComments={addComments}
+                            updateBook={updateBook}
+                            comments={comments.filter(comment => comment.bookId === book.id)}
+                        />
+                    );
+                })}
             </ul>
         </section>
     );
 };
 
-// Define PropTypes
 BookContainer.propTypes = {
     books: PropTypes.array.isRequired,
     onDeleteBook: PropTypes.func.isRequired,
-    addBook: PropTypes.func.isRequired, // Ensure addBook is a function
-    updateBook: PropTypes.func.isRequired, // Ensure updateBook is a function
+    addBook: PropTypes.func.isRequired,
+    updateBook: PropTypes.func.isRequired,
     comments: PropTypes.array,
     addComments: PropTypes.func.isRequired,
 };

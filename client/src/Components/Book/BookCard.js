@@ -1,7 +1,15 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
+import { motion } from "framer-motion"
 
-const BookCard = ({ book, onDeleteBook, updateBook, addComments, comments }) => {
+// Define the BookCard component with default parameters for props
+const BookCard = ({ 
+    book = { title: "", author: "", image_url: "" }, 
+    onDeleteBook = () => {}, 
+    updateBook = () => {}, 
+    addComments = () => {}, 
+    comments = [] 
+}) => {
     const [isEditing, setIsEditing] = useState(false);
     const [updatedBook, setUpdatedBook] = useState(book);
     const [newComment, setNewComment] = useState(""); // State to handle new comment input
@@ -87,7 +95,7 @@ const BookCard = ({ book, onDeleteBook, updateBook, addComments, comments }) => 
                 <>
                     <h3>Comments</h3>
                     <ul>
-                        {comments && comments.length > 0 ? (
+                        {comments.length > 0 ? (
                             comments.map(comment => (
                                 comment.id && comment.content ? (
                                     <li key={comment.id}>{comment.content}</li>
@@ -108,6 +116,7 @@ const BookCard = ({ book, onDeleteBook, updateBook, addComments, comments }) => 
                             placeholder="Add a comment"
                             required
                         />
+                        <motion.div animate={{ x: 100 }} />
                         <button type="submit">Add Comment</button>
                     </form>
                 </>
@@ -132,7 +141,7 @@ BookCard.propTypes = {
             id: PropTypes.number, // Make id optional
             content: PropTypes.string.isRequired,
         })
-    ).isRequired, // Comments must be an array of objects
+    ), // Comments must be an array of objects
 };
 
 export default BookCard;

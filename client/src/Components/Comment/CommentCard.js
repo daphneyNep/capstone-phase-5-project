@@ -6,9 +6,18 @@ const CommentCard = ({ comment, onDeleteComment }) => {
 
   return (
     <div>
-      <h3>{comment.title || "Untitled Comment"}</h3> {/* Fallback title */}
+      <h3>{comment.title || ""}</h3>
       <img src={comment.image_url || "/default-image.jpg"} alt="Comment" />
-      <p>{comment.content}</p>
+
+      {/* Use defaultValue for a non-editable field */}
+      <label htmlFor={`content-${comment.id}`}>Content</label>
+      <input
+        type="text"
+        id={`content-${comment.id}`}
+        name={`content-${comment.id}`}
+        defaultValue={comment.content}
+      />
+
       <button onClick={() => onDeleteComment(comment.id)}>Delete Comment</button>
     </div>
   );
@@ -17,7 +26,7 @@ const CommentCard = ({ comment, onDeleteComment }) => {
 // Prop types validation
 CommentCard.propTypes = {
   comment: PropTypes.shape({
-    title: PropTypes.string, // Title is now optional
+    title: PropTypes.string,
     content: PropTypes.string.isRequired,
     image_url: PropTypes.string,
     id: PropTypes.number.isRequired,

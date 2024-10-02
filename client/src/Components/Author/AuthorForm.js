@@ -12,6 +12,7 @@ function AuthorForm() {
         genre: yup.string().required("Genre is required"), // Changed to yup.string()
         bio: yup.string().required("Bio is required"),
         image_url: yup.string().required("Image URL is required"),
+        
     });
 
     // Create useFormik hook
@@ -21,6 +22,7 @@ function AuthorForm() {
             genre: '',
             bio: '',
             image_url: '',
+            
         },
         validationSchema: schema,
         onSubmit: (values) => {

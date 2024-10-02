@@ -11,7 +11,7 @@ const CommentContainer = ({ comments, onDeleteComment, image_url }) => {
     <div>
       {comments.map(comment => (
         <CommentCard 
-          key={comment.id} 
+          key={comment.id} // Use a unique key for each comment
           comment={comment} 
           image_url={image_url}
           onDeleteComment={onDeleteComment} // Pass the function to CommentCard

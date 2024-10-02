@@ -56,7 +56,7 @@ const ParentComponent = () => {
     <div>
       {userLists.map((userLists) => (
         <UserListCard
-          key={list.id}
+          key={userLists.id}
           userLists={userLists}
           users={users.find(user => user.id === list.userId)} // pass the correct user
           books={books}

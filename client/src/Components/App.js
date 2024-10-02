@@ -16,6 +16,7 @@ import UserListForm from "./UserList/UserListForm";
 import UserListDetail from "./UserList/UserListDetail";
 import UserForm from "./User/UserForm";
 import UserDetail from "./User/UserDetail";
+import UserCard from "./User/UserCard";
 import UserList from "./UserList/UserLists";
 import UserListComments from './UserList/UserListComments';
 import UserContainer from "./User/UserContainer"
@@ -62,6 +63,9 @@ function App() {
   const [searchTerm, setSearchTerm] = useState('');
   const [ratings, setRatings] = useState([]);
   const [onSelectedBooks, setOnSelectedBooks] = useState([]);
+  const [username, setUsername] = useState(''); 
+  const [password, setPassword] = useState('');
+  
   
 
   useEffect(() => {
@@ -80,17 +84,20 @@ function App() {
       
         const userRes = await fetch("http://127.0.0.1:5555/user");
         if (!userRes.ok) throw new Error(`Failed to fetch users: ${userRes.statusText}`);
-        const userData = await userRes.json();
+        const userData = await userRes.json(); // Correctly fetch user data
         setUsers(userData);
+        
+      
 
         const userListRes = await fetch("http://127.0.0.1:5555/userlist");
         if (!userListRes.ok) throw new Error(`Failed to fetch userLists: ${userListRes.statusText}`);
         const userListData = await userListRes.json();
         setUserLists(userListData);
       
-        const commentRes = await fetch("http://127.0.0.1:5555/comment");
+        const commentRes = await fetch("http://127.0.0.1:5555/comments");
         if (!commentRes.ok) throw new Error(`Failed to fetch comments: ${commentRes.statusText}`);
         const commentData = await commentRes.json();
+        console.log('Fetched comments:', commentData);
         setComments(commentData);
 
         
@@ -132,7 +139,7 @@ function App() {
       .catch(error => console.error('Error:', error));
   };
 
-  const onDeleteUser = (id) => {
+  const handleDeleteUser = (id) => {
     console.log(`Attempting to delete user with ID: ${id}`);
     fetch(`http://127.0.0.1:5555/user/${id}`, { method: 'DELETE' })
       .then((response) => {
@@ -197,14 +204,14 @@ function App() {
     user.username.toLowerCase().includes(searchTerm.toLowerCase())
   );
   const filteredComments = comments.filter(comment =>
-    String(comment.user_id).toLowerCase().includes(searchTerm.toLowerCase())
+    String(comment?.id).toLowerCase().includes(searchTerm.toLowerCase())
   );
   const filteredUserLists = userLists.filter(userlist =>
     String(userlist.user_id).toLowerCase().includes(searchTerm.toLowerCase())
   );
   const updateBook = (id, updatedBook) => {
     setBooks(books.map(book => (book.id === id ? updatedBook : book)));
-};
+  };
 
 const handleEdit = (id, updatedAuthor) => {
   setAuthors((prevAuthors) => 
@@ -212,13 +219,20 @@ const handleEdit = (id, updatedAuthor) => {
   );
 };
 
-// const handleAddRatings = (rating) => {
-//     console.log('Rating added:', rating);
-// };
+const handleLogin = (e) => {
+  e.preventDefault();
+  // Implement login logic here
+  console.log("Logging in with", username, password);
+  // Clear inputs after login attempt (if desired)
+  setUsername('');
+  setPassword('');
 
-// const handleEdit = (edit) => {
-//     console.log('Edit author with name:', edit);
-// };
+};
+
+
+const handleEditUser = (id, updatedUser) => {
+  setUsers(users.map(user => (user.id === id ? updatedUser : user)));
+};
 
 
 
@@ -239,6 +253,22 @@ const handleEdit = (id, updatedAuthor) => {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
+          {/* Add the Login Form Here */}
+      <form onSubmit={handleLogin}>
+        <input
+          type="text"
+          placeholder="Username"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+        />
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
+        <button type="submit">Login</button>
+      </form>
         <Routes>
         <Route path="/" element={<Home />} />
           <Route path="/author/new" element={<AuthorForm addAuthor={addAuthor} />} />
@@ -250,8 +280,9 @@ const handleEdit = (id, updatedAuthor) => {
           <Route path="/books/:bookid" element={<BookPage />} />
           <Route path="/books/:bookid/comments" element={<CommentPage comments={comments} />} />
           <Route path="/user/new" element={<UserForm addUser={addUser} />} />
-          <Route path="/users" element={<UserContainer users={filteredUsers} onDeleteUser={onDeleteUser} />} />
+          <Route path="/users" element={<UserContainer users={filteredUsers} handleEditUser={handleEditUser} handleDeleteUser={handleDeleteUser} user={users} />} />
           <Route path="/user/:id" element={<UserDetail />} />
+          <Route path="/users" element={<UserCard key={users.id} susername={username} password={password} handleEditUser={handleEditUser} handleDeleteUser={handleDeleteUser} users={users} />}/>
           <Route path="/userList/new" element={<UserListForm addUserList={addUserList} />} />
           <Route path="/userLists" element={<UserListContainer userLists={filteredUserLists} onDeleteUserList={onDeleteUserList} addComments={addComments} comments={comments} addRatings={addRatings} ratings={ratings} onSelectedBook={handleSelectedBooks} books={books} users={users} />} />
           <Route path="/userList/:id" element={<UserListDetail />} />
@@ -261,8 +292,7 @@ const handleEdit = (id, updatedAuthor) => {
           <Route path="/comments" element={<CommentContainer comments={filteredComments} onDeleteComment={onDeleteComment} />} />
           <Route path="/comment/:id" element={<CommentDetail />} />
           <Route path="*" element={<NotFound />} />
-          <Route path="/library" element={<LibraryPage onDeleteBook={onDeleteBook} />} />
-          <Route path="/" element={<Home />} />
+          <Route path="/library" element={<LibraryPage onDeleteBook={onDeleteBook} users={users}/>} />
         </Routes>
         </div>
     </ErrorBoundary>

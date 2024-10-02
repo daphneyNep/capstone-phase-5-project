@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import BookCard from './Book/BookCard';
-import UserLists from './UserList/UserLists'
+import UserLists from './UserList/UserLists';
 
 const LibraryPage = () => {
   const [books, setBooks] = useState([]);
@@ -63,12 +63,67 @@ const LibraryPage = () => {
     const newBook = { 
       id: books.length + 1, 
       title: newBookTitle, 
-      author: "Unknown", 
-      genre: "Unknown", 
+      author: "", 
+      genre: "", 
       summary: "", 
       image_url: "" 
     };
     setBooks([...books, newBook]);
+  };
+
+  const updateBook = async (updatedBook) => {
+    try {
+      const response = await fetch(`http://localhost:5555/books/${updatedBook.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedBook),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update the book');
+      }
+
+      const updatedBookData = await response.json();
+
+      // Update the book in the local state
+      setBooks((prevBooks) =>
+        prevBooks.map((book) =>
+          book.id === updatedBookData.id ? updatedBookData : book
+        )
+      );
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  // New function to handle adding comments
+  const handleAddComments = async (bookId, comment) => {
+    try {
+      const response = await fetch(`http://localhost:5555/books/${bookId}/comments`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ comment }), // Assuming your API expects { comment: "Your comment here" }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to add comment');
+      }
+
+      const newComment = await response.json();
+
+      // Update the comments in the state
+      setBooks((prevBooks) =>
+        prevBooks.map((book) =>
+          book.id === bookId ? { ...book, comments: [...(book.comments || []), newComment] } : book
+        )
+      );
+    } catch (err) {
+      setError(err.message);
+    }
   };
 
   if (loading) return <div>Loading books...</div>;
@@ -86,7 +141,10 @@ const LibraryPage = () => {
             key={book.id} 
             book={book} 
             onDeleteBook={onDeleteBook} 
-            addBook={handleAddBook} 
+            updateBook={updateBook}  // Pass the function here
+            addBook={handleAddBook}
+            addComments={handleAddComments} // Pass the new function here
+            comments={book.comments || []} 
           />
         ))}
       </div>

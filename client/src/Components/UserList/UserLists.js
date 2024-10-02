@@ -51,9 +51,8 @@ const UserLists = () => {
         }
     };
 
-    // Filter userLists by username
-    const filteredUserLists = userList.filter(userList =>
-        userList.users.some(user => user.username.toLowerCase().includes(searchTerm.toLowerCase()))
+    const filteredUserLists = userList.filter(userList => 
+        userList.users && userList.users.some(user => user.username.toLowerCase().includes(searchTerm.toLowerCase()))
     );
 
     return (
@@ -62,7 +61,7 @@ const UserLists = () => {
             {error && <div className="error">{error}</div>} {/* Display error message */}
             <Link to="/userLists">Go to User Lists</Link>
             <Search onSearch={setSearchTerm} />
-            <UserListForm addUserList={addUserList} />
+            <UserListForm addUserList={addUserList} uniqueId={userList.length + 1} /> {/* Pass a uniqueId prop */}
 
             {filteredUserLists.length > 0 ? (
                 <UserListContainer userLists={filteredUserLists} onDeleteUserList={onDeleteUserList} />

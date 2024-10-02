@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import React from "react";
 
 function CommentDetail() {
-    const { commentId, bookId } = useParams();  // Destructure params to get commentId and bookId
+    const {commentId, bookId } = useParams();  // Destructure params to get commentId and bookId
     const [comment, setComment] = useState(null); // Initialize as null
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
