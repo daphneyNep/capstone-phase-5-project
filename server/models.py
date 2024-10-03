@@ -122,7 +122,7 @@ class UserList(db.Model, SerializerMixin):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     book_id = db.Column(db.Integer, nullable=False)
-    rating = db.Column(db.Integer, nullable=False)
+
 
     books = db.relationship('Book', secondary=userlist_books, back_populates='userlists')
 
@@ -135,22 +135,22 @@ class UserList(db.Model, SerializerMixin):
     # Fields to serialize
     serialize_rules = ('-books.userLists', '-user.userlists')  # Avoid recursion
 
-    @validates('rating')
-    def validate_rating(self, key, value):
-        if value < 1 or value > 5:
-            raise ValueError('Rating must be between 1 and 5')
-        return value
+    # @validates('rating')
+    # def validate_rating(self, key, value):
+    #     if value < 1 or value > 5:
+    #         raise ValueError('Rating must be between 1 and 5')
+    #     return value
     
     def to_dict(self):
         return {
             'id': self.id,
             'user_id': self.user_id,
             'book_id': self.book_id,
-            'rating': self.rating
+    
         }
 
     def __repr__(self):
-        return f'<UserList user_id={self.user_id}, rating={self.rating}>'
+        return f'<UserList user_id={self.user_id}, {self.book_id}>'
 
 
 

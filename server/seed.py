@@ -205,7 +205,7 @@ def create_user_lists():
         for user in users.values():
             for book in books.values():
                 if user and book:
-                    user_lists.append(UserList(user_id=user.id, book_id=book.id, rating=randint(1, 5)))
+                    user_lists.append(UserList(user_id=user.id, book_id=book.id))
 
         db.session.bulk_save_objects(user_lists)
         db.session.commit()

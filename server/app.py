@@ -286,7 +286,7 @@ def add_book_to_user_list(user_list_id):
     # Here you can manage the logic of adding the book to the user list
     user_list.books.append(book)  # Assuming you have a relationship set up
     db.session.commit()
-    return jsonify({'message': 'Book added to user list'}), 201
+    return jsonify({'message': 'Book added to user list'}), 200
 
 
 
@@ -323,15 +323,15 @@ def get_user_lists():
             if not data:
                 return jsonify({'error': 'Bad request, no JSON data provided'}), 400
             
-            required_fields = ['user_id', 'book_id', 'rating']
+            required_fields = ['user_id', 'book_id']
             if not all(field in data for field in required_fields):
-                return jsonify({'error': 'Bad request, user_id, book_id and rating are required'}), 400
+                return jsonify({'error': 'Bad request, user_id, and book_id are required'}), 400
             
             # Create a new UserList entry
             new_userlist = UserList(
                 user_id=data['user_id'],
                 book_id=data['book_id'],
-                rating=data['rating']
+                
             )
             db.session.add(new_userlist)
             db.session.commit()
