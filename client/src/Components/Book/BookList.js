@@ -10,21 +10,16 @@ const BookList = () => {
     const [searchTerm, setSearchTerm] = useState(''); // State to hold the search term
 
     useEffect(() => {
-        const fetchBooks = async () => {
-            try {
-                const response = await fetch('http://localhost:5555/books');
-                if (!response.ok) {
-                    throw new Error('Failed to fetch books');
-                }
-                const data = await response.json();
-                setBooks(data);
-            } catch (error) {
-                console.error('Error fetching books:', error);
-            }
-        };
-
-        fetchBooks(); // Fetch books on component mount
+        fetch("http://127.0.0.1:5555/books")
+            .then((res) => res.json())
+            .then((data) => setBooks(data))
+            .catch((err) => console.error("Error fetching books:", err));
     }, []);
+
+    const addNewBook = (newBook) => {
+        setBooks((prevBooks) => [...prevBooks, newBook]);
+    };
+
 
     // Function to add a new book
     console.log(newBook)
@@ -61,13 +56,21 @@ const BookList = () => {
         book.title.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
+    const handleAddBook = (newBook) => {
+        // Handle the newly added book
+        console.log("New book added:", newBook);
+    };
 
     return (
         <div>
             <h1>Book List</h1>
-            
-            {/* Book Form */}
-            <BookForm addBook={addBook} /> {/* Pass addBook function to BookForm */}
+            <BookForm onAddBook={handleAddBook} />
+            <BookForm onAddBook={addNewBook} />
+            <ul>
+                {books.map((book) => (
+                    <li key={book.id}>{book.title}</li>
+                ))}
+            </ul>
                 
             {/* Search input */}
             <Search onSearch={setSearchTerm} />

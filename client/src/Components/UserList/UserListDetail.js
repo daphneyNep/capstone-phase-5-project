@@ -6,8 +6,8 @@ function UserListDetail() {
     const [userList, setUserLists] = useState({}); 
     const [comment, setComment] = useState(""); 
     const [comments, setComments] = useState([]); 
-    const [rate, setRate] = useState("");
-    const [ratings, setRatings] = useState([]); 
+    // const [rate, setRate] = useState("");
+    // const [ratings, setRatings] = useState([]); 
     const [error, setError] = useState(null); // Keep the error state
     const navigate = useNavigate(); 
 
@@ -46,17 +46,17 @@ function UserListDetail() {
         }
     };
 
-    const handleRateChange = (e) => {
-        setRate(e.target.value);
-    };
+    // const handleRateChange = (e) => {
+    //     setRate(e.target.value);
+    // };
 
-    const handleRateSubmit = (e) => {
-        e.preventDefault();
-        if (rate.trim()) {
-            setRatings([...ratings, rate]);
-            setRate("");
-        }
-    };
+    // const handleRateSubmit = (e) => {
+    //     e.preventDefault();
+    //     if (rate.trim()) {
+    //         setRatings([...ratings, rate]);
+    //         setRate("");
+    //     }
+    // };
 
     return (
         <div className="user-detail" id={id}>
@@ -108,8 +108,8 @@ function UserListDetail() {
                 </ul>
             </section>
 
-            <section className="rates">
-                <h2>Submit your rating!</h2>
+            {/* <section className="rates"> */}
+                {/* <h2>Submit your rating!</h2>
                 <form onSubmit={handleRateSubmit}>
                     <textarea
                         value={rate}
@@ -124,8 +124,8 @@ function UserListDetail() {
                     {ratings.map((rate, index) => (
                         <li key={index}>{rate}</li>
                     ))}
-                </ul>
-            </section>
+                </ul> */}
+            {/* </section> */}
         </div>
     );
 }

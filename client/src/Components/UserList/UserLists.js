@@ -61,7 +61,7 @@ const UserLists = () => {
             {error && <div className="error">{error}</div>} {/* Display error message */}
             <Link to="/userLists">Go to User Lists</Link>
             <Search onSearch={setSearchTerm} />
-            <UserListForm addUserList={addUserList} uniqueId={userList.length + 1} /> {/* Pass a uniqueId prop */}
+            <UserListForm addUserList={addUserList}  /> {/* Pass a uniqueId prop */}
             
 
             {filteredUserLists.length > 0 ? (

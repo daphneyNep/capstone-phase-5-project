@@ -28,6 +28,12 @@ const UserListCard = ({
 
   const handleCommentSubmit = async (e) => {
     e.preventDefault();
+
+    if (!userLists.id) {
+      setError("User list ID is undefined.");
+      return;
+    }
+
     if (newComment.trim()) {
       const commentData = { content: newComment, bookId: userLists.id };
 
@@ -62,10 +68,13 @@ const UserListCard = ({
   };
 
   const handleOnSelectedBook = (e) => {
-    setSelectedBook(e.target.value);
-    onSelectedBook(userLists.id, e.target.value);
+    const selectedBookId = e.target.value;
+    setSelectedBook(selectedBookId);
+    // Notify the parent component
+    onSelectedBook(userLists.id, selectedBookId);
   };
 
+  // Find the details of the selected book
   const selectedBookDetails = books.find(
     (book) => book.id === Number(selectedBook)
   );
@@ -89,11 +98,15 @@ const UserListCard = ({
 
       <select value={selectedBook} onChange={handleOnSelectedBook}>
         <option value="">Select a book</option>
-        {books.map((book) => (
-          <option key={book.id} value={book.id}>
-            {book.title}
-          </option>
-        ))}
+        {books.length > 0 ? (
+          books.map((book) => (
+            <option key={book.id} value={book.id}>
+              {book.title}
+            </option>
+          ))
+        ) : (
+          <option disabled>No books available</option>
+        )}
       </select>
 
       {selectedBook && selectedBookDetails && (
@@ -112,6 +125,7 @@ const UserListCard = ({
       <section className="comments">
         <form onSubmit={handleCommentSubmit}>
           <textarea
+            id="newComment"
             value={newComment}
             onChange={handleCommentChange}
             placeholder="Add a comment"
@@ -123,7 +137,7 @@ const UserListCard = ({
         {error && <div className="error">{error}</div>}
         <ul>
           {localComments.map((com, index) => (
-            <li key={index}>{com.content || com}</li>
+            <li key={com.id || index}>{com.content || com}</li>
           ))}
         </ul>
       </section>
@@ -145,7 +159,7 @@ const UserListCard = ({
 };
 
 UserListCard.propTypes = {
-  userLists: PropTypes.object,
+  userLists: PropTypes.array.isRequired,
   user: PropTypes.shape({
     id: PropTypes.number,
     username: PropTypes.string,

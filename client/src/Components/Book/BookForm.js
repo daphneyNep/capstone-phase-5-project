@@ -7,17 +7,41 @@ function BookForm() {
     const navigate = useNavigate();
     const { id } = useParams();
     const [isEdit, setIsEdit] = useState(false);
-    
     const formikRef = useRef();
 
+    // Validation schema
     const schema = yup.object().shape({
-        author_id: yup.number().required("Author_id is required"),
+        author_id: yup.number().required("Author ID is required"),
         title: yup.string().required("Title is required"),
         summary: yup.string().required("Summary is required"),
         image_url: yup.string().required("Image URL is required"),
         comment: yup.string().required("Comment is required")
     });
 
+    // Function to add a book
+    const handleAddBook = (values) => {
+        fetch("http://127.0.0.1:5555/book", {
+            method: "POST",
+            body: JSON.stringify(values),
+            headers: { 'Content-Type': 'application/json' }
+        })
+        .then(res => {
+            if (res.ok) {
+                return res.json();
+            } else {
+                throw new Error("Failed to create book");
+            }
+        })
+        .then(data => {
+            console.log("Book created:", data);
+            navigate(`/book/${data.id}`); // Navigate to the new book's page
+        })
+        .catch(error => {
+            console.error("Error creating book:", error.message);
+        });
+    };
+
+    // Formik setup
     const formik = useFormik({
         initialValues: {
             author_id: '',
@@ -28,8 +52,6 @@ function BookForm() {
         },
         validationSchema: schema,
         onSubmit: (values) => {
-            console.log("if submission is done:", values); // Debugging line
-        
             if (isEdit) {
                 fetch(`http://127.0.0.1:5555/book/${id}`, {
                     method: "PATCH",
@@ -44,28 +66,9 @@ function BookForm() {
                     console.log("Book updated:", data);
                     navigate(`/book/${id}`);
                 })
-                .catch(err => console.error("Failed to update book:", err));
+                .catch(err => console.error("Error updating book:", err));
             } else {
-                console.log("newBook:", values);
-                fetch("http://127.0.0.1:5555/book", {
-                method: "POST",
-                body: JSON.stringify(values),
-                headers: { 'Content-Type': 'application/json' }
-            })
-                .then(res => {
-                    if (res.ok) {
-                        return res.json();
-                    } else {
-                        throw new Error("Failed to create book");
-                    }
-                })
-                .then(data => {
-                    navigate(`/book/${data.id}`); // Corrected to navigate to author page
-                })
-                .catch(error => {
-                    console.error(error.message);
-                    // Optionally, you could set an error state here to inform the user
-                });
+                handleAddBook(values); // Call the function to add the book
             }
         }
     });
@@ -74,6 +77,7 @@ function BookForm() {
         formikRef.current = formik;
     }, [formik]);
 
+    // Fetch existing book data
     useEffect(() => {
         if (id) {
             setIsEdit(true);
@@ -87,13 +91,13 @@ function BookForm() {
                         author_id: data.author_id,
                         title: data.title,
                         summary: data.summary,
-                        image_url: '',
-                        commnet: data.comment
+                        image_url: data.image_url,
+                        comment: data.comment
                     });
                 })
                 .catch(err => console.error("Error fetching book data:", err));
         }
-    }, [id]); // No need to include formik here
+    }, [id]);
 
     return (
         <section>
@@ -158,7 +162,8 @@ function BookForm() {
                     <h3 style={{ color: "red" }}>{formik.errors.comment}</h3>
                 )}
 
-                <input className="button" type="submit" value={isEdit ? "Update Book" : "creat Book"} />
+                <input className="button" type="submit" value={isEdit ? "Update Book" : "Create Book"} />
+
                 {isEdit && (
                     <button
                         type="button"
