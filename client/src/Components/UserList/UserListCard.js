@@ -16,7 +16,7 @@ const UserListCard = ({
   const [localComments, setLocalComments] = useState(comments);
   const [error, setError] = useState(null);
   const [showComments, setShowComments] = useState(false);
-
+  console.log(selectedBook)
   // Set localComments when comments prop changes
   useEffect(() => {
     setLocalComments(comments);
@@ -29,17 +29,19 @@ const UserListCard = ({
   const handleCommentSubmit = async (e) => {
     e.preventDefault();
 
-    if (!userLists.id) {
+    if (!user.id) {
       setError("User list ID is undefined.");
       return;
     }
 
+    const book=books.find(book=> book.id===parseInt(selectedBook))
+    console.log(book)
     if (newComment.trim()) {
-      const commentData = { content: newComment, bookId: userLists.id };
+      const commentData = { content: newComment, book_id: selectedBook, user_id: user.id, image_url: book.image_url };
 
       try {
         const response = await fetch(
-          `http://127.0.0.1:5555/userlist/${userLists.id}/comments`,
+          `http://127.0.0.1:5555/userlists/${user.id}/comments`,
           {
             method: "POST",
             headers: {
@@ -70,8 +72,10 @@ const UserListCard = ({
   const handleOnSelectedBook = (e) => {
     const selectedBookId = e.target.value;
     setSelectedBook(selectedBookId);
+    
     // Notify the parent component
-    onSelectedBook(userLists.id, selectedBookId);
+    onSelectedBook(selectedBookId);
+    
   };
 
   // Find the details of the selected book
@@ -144,16 +148,8 @@ const UserListCard = ({
 
       <button onClick={handleOnDelete}>Delete</button>
 
-      <Link to={`/userLists/${userLists.id}/comments`}>View Comments</Link>
+      <Link to={`/userLists/${user.id}/comments`}>View Comments</Link>
 
-      <h4>Comments</h4>
-      <ul>
-        {localComments
-          .filter((comment) => comment.userListId === userLists.id)
-          .map((comment) => (
-            <li key={comment.id}>{comment.content}</li>
-          ))}
-      </ul>
     </li>
   );
 };

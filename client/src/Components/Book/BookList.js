@@ -23,6 +23,7 @@ const BookList = () => {
 
     // Function to add a new book
     console.log(newBook)
+    console.log(addBook)
     const addBook = (newBook) => {
         setBooks([...books, newBook]); // Add new book to the list
     };

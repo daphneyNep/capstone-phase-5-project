@@ -46,9 +46,7 @@ function UserListDetail() {
         }
     };
 
-    // const handleRateChange = (e) => {
-    //     setRate(e.target.value);
-    // };
+   
 
     // const handleRateSubmit = (e) => {
     //     e.preventDefault();

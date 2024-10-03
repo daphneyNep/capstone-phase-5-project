@@ -116,6 +116,7 @@ function App() {
   const addUserList = (userList) => setUserLists((prev) => [...prev, userList]);
   const addComments = (comment) => setComments((prev) => [...prev, comment]);
   const addRatings = (rating) => setRatings((prev) => [...prev, rating]);
+  
   // const onSelectedBooks = (book) => setOnSelectedBooks((prev) => [...prev, book]);
   
 
@@ -274,7 +275,7 @@ const handleEditUser = (id, updatedUser) => {
           <Route path="/author/new" element={<AuthorForm addAuthor={addAuthor} />} />
           <Route path="/author/:id" element={<AuthorDetail />} />
           <Route path="/authors" element={<AuthorContainer authors={filteredAuthors} onDeleteAuthor={onDeleteAuthor} onEdit={handleEdit}/>} />
-          <Route path="/books" element={<BookContainer books={filteredBooks} onDeleteBook={onDeleteBook} addComments={addComments} comments={comments} addBook={addBook} updateBook={updateBook} onSelectedBook={handleSelectedBooks}/>} />
+          <Route path="/books" element={<BookContainer books={filteredBooks} onDeleteBook={onDeleteBook} addComments={addComments} comments={comments} addBook={addBook} updateBook={updateBook} onSelectedBook={handleSelectedBooks} />} />
           <Route path="/book/new" element={<BookForm addBook={addBook} />} />
           <Route path="/book/:id" element={<BookDetail books={books}/> } />
           <Route path="/books/:bookid" element={<BookPage />} />

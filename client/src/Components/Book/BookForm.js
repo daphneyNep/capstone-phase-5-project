@@ -33,8 +33,8 @@ function BookForm() {
             }
         })
         .then(data => {
-            console.log("Book created:", data);
-            navigate(`/book/${data.id}`); // Navigate to the new book's page
+            console.log(data);
+            navigate(data); // Navigate to the new book's page
         })
         .catch(error => {
             console.error("Error creating book:", error.message);

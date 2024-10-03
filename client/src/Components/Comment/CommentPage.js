@@ -11,7 +11,10 @@ function CommentPage({ initialComments }) {
   useEffect(() => {
     // Check if userListId is defined
     if (userListId) {
-        fetch(`http://localhost:5555/userLists/${userListId}/comments`)
+        fetch(`http://localhost:5555/userlists/${userListId}/comments`, {
+          method: 'GET', 
+          headers: {"Access-Control-Allow-Origin":"*"}
+        })
             .then(response => {
                 // if (!response.ok) {
                 //     throw new Error('Network response was not ok');
@@ -21,6 +24,11 @@ function CommentPage({ initialComments }) {
             .then(data => {
                 // Handle the data here
                 console.log(data);
+                setComments(data)
+            
+          
+          
+                
             })
             .catch(error => console.error('Fetch error:', error));
     } else {

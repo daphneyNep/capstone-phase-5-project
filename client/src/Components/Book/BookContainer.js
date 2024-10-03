@@ -38,6 +38,7 @@ const BookContainer = ({ books = [], onDeleteBook, addBook, updateBook, addComme
 
     return (
         <section>
+            
             {/* <h1>Add a New Book</h1>
             <form onSubmit={handleAddBookSubmit}>
                 <input
@@ -100,10 +101,10 @@ const BookContainer = ({ books = [], onDeleteBook, addBook, updateBook, addComme
 BookContainer.propTypes = {
     books: PropTypes.array.isRequired,
     onDeleteBook: PropTypes.func.isRequired,
-    addBook: PropTypes.func.isRequired,
-    updateBook: PropTypes.func.isRequired,
+    addBook: PropTypes.func,
+    updateBook: PropTypes.func,
     comments: PropTypes.array,
-    addComments: PropTypes.func.isRequired,
+    addComments: PropTypes.func,
 };
 
 export default BookContainer;
