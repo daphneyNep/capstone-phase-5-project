@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { motion } from "framer-motion"
+
 
 // Define the BookCard component with default parameters for props
 const BookCard = ({ 
@@ -36,10 +36,13 @@ const BookCard = ({
         setNewComment(e.target.value); // Update newComment state
     };
 
+    console.log(newComment)
     const handleAddComment = (e) => {
         e.preventDefault();
+        console.log('form has been submitted')
         if (newComment.trim()) {
-            addComments({ bookId: book.id, content: newComment }); // Call the addComments function with the new comment
+            console.log('if statement is working')
+            addComments({ image_url: book.image_url, bookId: book.id, content: newComment }); // Call the addComments function with the new comment
             setNewComment(""); // Reset the input field after adding the comment
         }
     };
@@ -48,7 +51,10 @@ const BookCard = ({
         setShowComments(!showComments); // Toggle the visibility of the comments
     };
 
+    console.log(book.image_url)
+
     return (
+    
         <li className="card">
             {isEditing ? (
                 <form onSubmit={handleUpdate}>
@@ -116,7 +122,6 @@ const BookCard = ({
                             placeholder="Add a comment"
                             required
                         />
-                        <motion.div animate={{ x: 100 }} />
                         <button type="submit">Add Comment</button>
                     </form>
                 </>

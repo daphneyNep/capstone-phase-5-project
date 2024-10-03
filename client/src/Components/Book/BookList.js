@@ -27,6 +27,7 @@ const BookList = () => {
     }, []);
 
     // Function to add a new book
+    console.log(newBook)
     const addBook = (newBook) => {
         setBooks([...books, newBook]); // Add new book to the list
     };
@@ -50,9 +51,9 @@ const BookList = () => {
     };
 
     // Function to add a comment to a book
-    const addComment = (bookId, comment) => {
-        console.log(`Adding comment to book ${bookId}: ${comment}`);
-        setComments((prevComments) => [...prevComments, { bookId, content: comment, id: Date.now() }]);
+    const addComments = (bookId, comment, image_url) => {
+        console.log(`Adding comment to book ${bookId}: ${comment} ${image_url}`);
+        setComments((prevComments) => [...prevComments, { bookId, image_url, content: comment, id: Date.now() }]);
     };
 
     // Filter books based on the search term
@@ -60,13 +61,14 @@ const BookList = () => {
         book.title.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
+
     return (
         <div>
             <h1>Book List</h1>
             
             {/* Book Form */}
             <BookForm addBook={addBook} /> {/* Pass addBook function to BookForm */}
-
+                
             {/* Search input */}
             <Search onSearch={setSearchTerm} />
 
@@ -74,7 +76,7 @@ const BookList = () => {
             <BookContainer 
                 books={filteredBooks} 
                 onDeleteBook={onDeleteBook} 
-                addComment={addComment}
+                addComments={addComments}
                 comments={comments}
             />
         </div>

@@ -17,10 +17,7 @@ const UserCard = ({ user, handleDeleteUser, handleEditUser }) => {
 
 // Define prop types for type checking
 UserCard.propTypes = {
-  user: PropTypes.shape({
-    id: PropTypes.number.isRequired,
-    username: PropTypes.string.isRequired,
-  }).isRequired,
+  user: PropTypes.object,
   handleDeleteUser: PropTypes.func.isRequired,
   handleEditUser: PropTypes.func.isRequired,
 };

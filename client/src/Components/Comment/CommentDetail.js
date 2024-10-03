@@ -42,7 +42,8 @@ function CommentDetail() {
             body: JSON.stringify({
                 content: newCommentContent,
                 book_id: bookId, // Use bookId from useParams
-                user_id: 1 // Replace with the actual user ID
+                user_id: 1, // Replace with the actual user ID
+                userlist_id: 1
             })
         })
         .then(response => {
@@ -75,7 +76,7 @@ function CommentDetail() {
         return <p>No comment found.</p>;
     }
 
-    const { id, content, author_id, book_id, user_id, image_url, created_at, updated_at } = comment;
+    const { id, content, author_id, book_id, user_id, userlist_id, image_url, created_at, updated_at } = comment;
 
     return (
         <div className="comment-detail" id={id}>
@@ -86,6 +87,7 @@ function CommentDetail() {
                     <section>
                         <p>Author: {author_id}</p>
                         <p>User: {user_id}</p>
+                        <p>Userlist: {userlist_id}</p>
                         <p>Book: {book_id}</p>
                         <p>Created: {created_at}</p>
                         <p>Updated: {updated_at}</p>

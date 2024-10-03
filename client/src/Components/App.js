@@ -287,6 +287,7 @@ const handleEditUser = (id, updatedUser) => {
           <Route path="/userLists" element={<UserListContainer userLists={filteredUserLists} onDeleteUserList={onDeleteUserList} addComments={addComments} comments={comments} addRatings={addRatings} ratings={ratings} onSelectedBook={handleSelectedBooks} books={books} users={users} />} />
           <Route path="/userList/:id" element={<UserListDetail />} />
           <Route path="/userList" element={<UserList />} />
+          <Route path="/userLists/:userListId/comments" element={<CommentPage />} />
           <Route path="/userLists/:id/comments" element={<UserListComments />} />
           <Route path="/comment/new" element={<CommentForm addComments={addComments} />} />
           <Route path="/comments" element={<CommentContainer comments={filteredComments} onDeleteComment={onDeleteComment} />} />

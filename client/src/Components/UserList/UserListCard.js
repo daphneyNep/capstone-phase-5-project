@@ -1,34 +1,60 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
 
 const UserListCard = ({
   userLists = [],
-  user, // Expect a single user object, not an array
+  user = {},
   onSelectedBook,
   books = [],
   onDeleteUserList,
-  addComment,
+  addComments = () => {},
   comments = [],
-  addRatings = () => {},
-  ratings = [],
 }) => {
   const [newComment, setNewComment] = useState("");
-  const [newRating, setNewRating] = useState("");
   const [selectedBook, setSelectedBook] = useState("");
+  const [localComments, setLocalComments] = useState(comments);
+  const [error, setError] = useState(null);
+  const [showComments, setShowComments] = useState(false);
 
-  const handleCommentChange = (e) => setNewComment(e.target.value);
-  const handleAddComment = () => {
-    if (newComment.trim() === "") return;
-    addComment(userLists.id, newComment);
-    setNewComment("");
+  // Set localComments when comments prop changes
+  useEffect(() => {
+    setLocalComments(comments);
+  }, [comments]);
+
+  const handleCommentChange = (e) => {
+    setNewComment(e.target.value);
   };
 
-  const handleRatingChange = (e) => setNewRating(e.target.value);
-  const handleAddRating = () => {
-    if (newRating.trim() === "") return;
-    addRatings(userLists.id, newRating);
-    setNewRating("");
+  const handleCommentSubmit = async (e) => {
+    e.preventDefault();
+    if (newComment.trim()) {
+      const commentData = { content: newComment, bookId: userLists.id };
+
+      try {
+        const response = await fetch(
+          `http://127.0.0.1:5555/userlist/${userLists.id}/comments`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(commentData),
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to submit comment");
+        }
+
+        const addedComment = await response.json();
+        setLocalComments((prevComments) => [...prevComments, addedComment]);
+        setNewComment("");
+        setError(null);
+      } catch (err) {
+        setError("Failed to submit comment");
+      }
+    }
   };
 
   const handleOnDelete = () => {
@@ -40,7 +66,13 @@ const UserListCard = ({
     onSelectedBook(userLists.id, e.target.value);
   };
 
-  const selectedBookDetails = books.find((book) => book.id === Number(selectedBook));
+  const selectedBookDetails = books.find(
+    (book) => book.id === Number(selectedBook)
+  );
+
+  const toggleComments = () => {
+    setShowComments(!showComments);
+  };
 
   return (
     <li className="UserLists-card">
@@ -70,51 +102,42 @@ const UserListCard = ({
           <img
             src={selectedBookDetails.image_url}
             alt="Selected Book Cover"
-            style={{ width: '100px', height: '150px' }}
+            style={{ width: "100px", height: "150px" }}
           />
           <p>{selectedBookDetails.title}</p>
         </div>
       )}
 
-      <input
-        type="text"
-        value={newComment}
-        onChange={handleCommentChange}
-        placeholder="Write a comment"
-        id={`comment-input-${userLists.id}`}
-        name={`comment-${userLists.id}`}
-        autoComplete="off"
-      />
-      <button onClick={handleAddComment}>Add Comment</button>
+      <h1>Add a New Comment</h1>
+      <section className="comments">
+        <form onSubmit={handleCommentSubmit}>
+          <textarea
+            value={newComment}
+            onChange={handleCommentChange}
+            placeholder="Add a comment"
+            rows="4"
+            style={{ width: "100%" }}
+          />
+          <button type="submit">Submit</button>
+        </form>
+        {error && <div className="error">{error}</div>}
+        <ul>
+          {localComments.map((com, index) => (
+            <li key={index}>{com.content || com}</li>
+          ))}
+        </ul>
+      </section>
+
       <button onClick={handleOnDelete}>Delete</button>
+
+      <Link to={`/userLists/${userLists.id}/comments`}>View Comments</Link>
 
       <h4>Comments</h4>
       <ul>
-        {comments
+        {localComments
           .filter((comment) => comment.userListId === userLists.id)
           .map((comment) => (
             <li key={comment.id}>{comment.content}</li>
-          ))}
-      </ul>
-      <Link to={`/userLists/${userLists.id}/comments`}>View Comments</Link>
-
-      <input
-        type="text"
-        value={newRating}
-        onChange={handleRatingChange}
-        placeholder="Write a rating"
-        id={`rating-input-${userLists.id}`}
-        name={`rating-${userLists.id}`}
-        autoComplete="off"
-      />
-      <button onClick={handleAddRating}>Add Ratings</button>
-
-      <h4>Ratings</h4>
-      <ul>
-        {ratings
-          .filter((rating) => rating.userListId === userLists.id)
-          .map((rating) => (
-            <li key={rating.id}>{rating.content}</li>
           ))}
       </ul>
     </li>
@@ -122,13 +145,15 @@ const UserListCard = ({
 };
 
 UserListCard.propTypes = {
-    userLists: PropTypes.array, // Make sure this matches the type being passed
-    user: PropTypes.object.isRequired,
-    books: PropTypes.array.isRequired,
-    onSelectedBook: PropTypes.func.isRequired,
-    onDeleteUserList: PropTypes.func.isRequired,
-    addComment: PropTypes.func.isRequired,
-    addRatings: PropTypes.func.isRequired,
+  userLists: PropTypes.object,
+  user: PropTypes.shape({
+    id: PropTypes.number,
+    username: PropTypes.string,
+  }),
+  books: PropTypes.array.isRequired,
+  onSelectedBook: PropTypes.func.isRequired,
+  onDeleteUserList: PropTypes.func.isRequired,
+  comments: PropTypes.array.isRequired,
 };
 
 export default UserListCard;

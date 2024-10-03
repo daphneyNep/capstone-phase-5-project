@@ -1,135 +1,43 @@
 import React from "react";
-// import BookCard from "./Book/BookCard";
-import LibraryPage from './LibraryPage';
+import { motion, useMotionValue, useTransform } from "framer-motion"; // Import necessary functions
+// import LibraryPage from './LibraryPage';
 import About from "./About";
-import Search from './Search';
+
 
 function Home() {
+    const list = { hidden: { opacity: 0 } }
+    const item = { hidden: { x: -10, opacity: 0 } }
 
-    
-    // const [books, setBooks] = useState([]);
-    // const [error, setError] = useState(null);
-
-    // // Function to handle the deletion of a book
-    // const onDeleteBook = (bookId) => {
-    //     fetch(`http://127.0.0.1:5555/books/${bookId}`, {
-    //         method: 'DELETE',
-    //     })
-    //     .then(res => {
-    //         if (!res.ok) {
-    //             throw new Error(`HTTP error! Status: ${res.status}`);
-    //         }
-    //         setBooks(books.filter(book => book.id !== bookId));
-    //     })
-    //     .catch(err => {
-    //         setError(err.message);
-    //         console.error("Delete error:", err);
-    //     });
-    // };
-
-    // // Function to handle adding a new book
-    // const handleAddBook = (newBookTitle) => {
-    //     const newBook = { id: books.length + 1, title: newBookTitle, author: "", genre: "", summary: "", image_url: "" };
-    //     setBooks([...books, newBook]);
-    // };
-
-    // // Function to handle adding a comment
-    // const handleAddComment = (bookId, comment) => {
-    //     fetch(`http://127.0.0.1:5555/books/${bookId}/comments`, {
-    //         method: 'POST',
-    //         headers: {
-    //             'Content-Type': 'application/json',
-    //         },
-    //         body: JSON.stringify({ content: comment }),
-    //     })
-    //     .then(res => {
-    //         if (!res.ok) {
-    //             throw new Error(`HTTP error! Status: ${res.status}`);
-    //         }
-    //         return res.json();
-    //     })
-    //     .then(newComment => {
-    //         setBooks(books.map(book => {
-    //             if (book.id === bookId) {
-    //                 return {
-    //                     ...book,
-    //                     comments: [...(book.comments || []), newComment]
-    //                 };
-    //             }
-    //             return book;
-    //         }));
-    //     })
-    //     .catch(err => {
-    //         setError(err.message);
-    //         console.error("Add comment error:", err);
-    //     });
-    // };
-
-    // // Function to handle updating a book
-    // const handleUpdateBook = (updatedBook) => {
-    //     setBooks(books.map(book => (book.id === updatedBook.id ? updatedBook : book)));
-    // };
-
-    // useEffect(() => {
-    //     fetch("http://127.0.0.1:5555/books")
-    //         .then(res => {
-    //             if (!res.ok) {
-    //                 throw new Error(`HTTP error! Status: ${res.status}`);
-    //             }
-    //             return res.json();
-    //         })
-    //         .then(data => {
-    //             if (Array.isArray(data)) {
-    //                 setBooks(data);
-    //             } else {
-    //                 throw new Error("Unexpected data format");
-    //             }
-    //         })
-    //         .catch(err => {
-    //             setError(err.message);
-    //             console.error("Fetch error:", err);
-    //         });
-    // }, []);
-
-    // if (error) {
-    //     return <div>Error: {error}</div>;
-    // }
-
-    
+    const x = useMotionValue(0); // Correctly use useMotionValue
+    const opacity = useTransform(x, [-100, 0, 100], [0, 1, 0]); // Correctly use useTransform
 
     return (
         <div>
             <section>
                 <About />
             </section>
+            <image_url src="https://via.placeholder.com/150" alt="Placeholder Image" />
 
-            <section>
-                <LibraryPage />
-            </section>
-            
-            <section>
-                <Search />
-            </section>
-          
-
-            {/* <section>
-                <h2>Books</h2>
-                {books.length > 0 ? (
-                    books.map(book => (
-                        <BookCard 
-                            key={book.id} 
-                            book={book} 
-                            // onDeleteBook={onDeleteBook}
-                            // addBook={handleAddBook}
-                            // comments={book.comments || []} // Ensure comments is always an array
-                            // addComments={handleAddComment} // Pass the addComments handler
-                            // updateBook={handleUpdateBook}  // Pass the updateBook handler
-                        />
-                    ))
-                ) : (
-                    <p>No books available.</p>
-                )}
-            </section> */}
+            {/* Motion components for animations */}
+            <motion.div layout />
+            <motion.div animate={{ x: 100 }} />
+            <motion.div 
+                whileHover={{ scale: 1.2 }} 
+                whileTap={{ scale: 1.1 }} 
+                drag="x" 
+                dragConstraints={{ left: -100, right: 100 }}
+            />
+            <motion.ul animate="hidden" variants={list}>
+                <motion.li variants={item} />
+                <motion.li variants={item} />
+                <motion.li variants={item} />
+            </motion.ul>
+            <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} />
+            <motion.div initial={false} animate={{ x: 100 }} />
+            <motion.div drag="x" style={{ x, opacity }} />
+            <motion.div layout />
+            {/* Update this section to handle opacity change */}
+            <motion.div className="boxes" animate={{ opacity: 0 }} />
         </div>
     );
 }

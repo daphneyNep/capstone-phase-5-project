@@ -1,6 +1,7 @@
 import React from "react";
 import PropTypes from "prop-types";
-import { motion } from "framer-motion"
+// import { motion } from "framer-motion"
+// import * as motion from "framer-motion/client"
 
 const AuthorCard = ({ authors = [], onDeleteAuthor, onEdit }) => {
   return (
@@ -17,7 +18,7 @@ const AuthorCard = ({ authors = [], onDeleteAuthor, onEdit }) => {
             }}
           />
           )}
-          <motion.div animate={{ x: 100 }} />
+          {/* <motion.div animate={{ x: 100 }} /> */}
           <h3>{author.name}</h3>
           <button onClick={() => onEdit(author)}>Edit</button>
           <button onClick={() => onDeleteAuthor(author.id)}>Delete</button>

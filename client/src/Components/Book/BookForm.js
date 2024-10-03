@@ -28,7 +28,7 @@ function BookForm() {
         },
         validationSchema: schema,
         onSubmit: (values) => {
-            console.log("Submitting values:", values); // Debugging line
+            console.log("if submission is done:", values); // Debugging line
         
             if (isEdit) {
                 fetch(`http://127.0.0.1:5555/book/${id}`, {
@@ -46,12 +46,12 @@ function BookForm() {
                 })
                 .catch(err => console.error("Failed to update book:", err));
             } else {
-                console.log("Submitting book data:", values);
+                console.log("newBook:", values);
                 fetch("http://127.0.0.1:5555/book", {
-                    method: "POST",
-                    body: JSON.stringify(values),
-                    headers: { 'Content-Type': 'application/json' }
-                })
+                method: "POST",
+                body: JSON.stringify(values),
+                headers: { 'Content-Type': 'application/json' }
+            })
                 .then(res => {
                     if (res.ok) {
                         return res.json();
@@ -60,7 +60,7 @@ function BookForm() {
                     }
                 })
                 .then(data => {
-                    navigate(`/book/${data.id}`); // Navigate to the book page
+                    navigate(`/book/${data.id}`); // Corrected to navigate to author page
                 })
                 .catch(error => {
                     console.error(error.message);
@@ -68,7 +68,7 @@ function BookForm() {
                 });
             }
         }
-    })
+    });
 
     useEffect(() => {
         formikRef.current = formik;
@@ -87,7 +87,7 @@ function BookForm() {
                         author_id: data.author_id,
                         title: data.title,
                         summary: data.summary,
-                        image_url: data.image_url,
+                        image_url: '',
                         commnet: data.comment
                     });
                 })
@@ -158,7 +158,7 @@ function BookForm() {
                     <h3 style={{ color: "red" }}>{formik.errors.comment}</h3>
                 )}
 
-                <input className="button" type="submit" value={isEdit ? "Update Book" : "Add Book"} />
+                <input className="button" type="submit" value={isEdit ? "Update Book" : "creat Book"} />
                 {isEdit && (
                     <button
                         type="button"

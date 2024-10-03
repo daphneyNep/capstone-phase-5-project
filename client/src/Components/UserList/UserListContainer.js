@@ -7,45 +7,58 @@ const UserListContainer = ({
     onDeleteUserList,
     books = [],
     addComments,
-    addRatings,
-    users = [],
+    comments,
+    users,
 }) => {
-    console.log("Users data:", users);
+    // Moved console.log here for debugging purposes
+    console.log("User data:", users);
 
-    const handleSelectedBook = (userListsId, bookId) => {
-        console.log(`UserLists ID: ${userListsId}, Book ID: ${bookId}`);
+    const handleSelectedBook = (userListId, bookId) => {
+        console.log(`UserLists ID: ${userListId}, Book ID: ${bookId}`);
     };
+
+    const handleAddComments = (userListId, comment) => {
+        console.log(`Adding comment to userList ${userListId}: ${comment}`);
+        // Update the state or perform the necessary action
+    };
+    
 
     return (
         <section>
             <h1>Users</h1>
-            {users.length === 0 ? (
-                <p>No users available</p>
+            {userLists.length === 0 ? (
+                <p>No user lists available</p>
             ) : (
-                users.map((user) => (
-                    <UserListCard 
-                        key={user.id}
-                        userLists={userLists} 
-                        user={user} // Pass the single user object
-                        books={books}
-                        onSelectedBook={handleSelectedBook}
-                        onDeleteUserList={onDeleteUserList}
-                        addComment={addComments} 
-                        addRatings={addRatings}
-                    />
-                ))
+                userLists.map((userList) => {
+                    // Find the corresponding user for each userList
+                    const user = users.find(u => u.id === userList.userId); // Correctly use userList here
+                    
+                    return (
+                        <UserListCard 
+                            key={userList.id}  // Use userList.id for the key
+                            userList={userList} // Pass the correct userList object
+                            user={user} 
+                            books={books}
+                            onSelectedBook={handleSelectedBook}
+                            onDeleteUserList={onDeleteUserList}
+                            addComments={handleAddComments} 
+                            comments={comments}
+                        />
+                    );
+                })
             )}
         </section>
     );
 };
 
 UserListContainer.propTypes = {
-    userLists: PropTypes.array,
+    userLists: PropTypes.array,  // Specify as required
     onDeleteUserList: PropTypes.func.isRequired,
-    books: PropTypes.array,
+    onSelectedBook: PropTypes.func.isRequired,
+    books: PropTypes.array.isRequired,
     addComments: PropTypes.func.isRequired,
-    addRatings: PropTypes.func.isRequired,
-    users: PropTypes.array,
+    comments: PropTypes.array.isRequired,
+    users: PropTypes.array.isRequired // Specify as required
 };
 
 export default UserListContainer;
