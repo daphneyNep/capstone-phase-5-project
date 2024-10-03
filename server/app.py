@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request, make_response
+from flask import Flask, jsonify, request, make_response, Response
 from config import app, db
 from models import Author, Book, Comment, User, UserList
 from flask_cors import CORS
@@ -21,6 +21,13 @@ from sqlalchemy.exc import SQLAlchemyError
 logging.basicConfig(level=logging.INFO)
 
 CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}})
+
+# @app.before_request
+# def handle_preflight():
+#     if request.method == "OPTIONS":
+#         res = Response()
+#         res.headers['X-Content-Type-Options'] = '*'
+#         return res
 
 @app.route('/')
 def index():
@@ -226,15 +233,47 @@ def add_comment(book_id):
 @app.route('/book', methods=['POST', 'OPTIONS'])
 def create_book():
     if request.method == 'OPTIONS':
-        # Respond to preflight request
+        # Respond to preflight request for CORS
         return _build_cors_preflight_response()
-    # Handle the actual POST request here
+
+    # Get data from the request
     data = request.json
-    # Process book creation logic here
-    return jsonify({'message': 'Book created successfully', 'id': 1})
+    
+    # Validate input data (make sure required fields are present)
+    author_id = data.get('author_id')
+    title = data.get('title')
+    summary = data.get('summary')
+    image_url = data.get('image_url')
+
+    if not all([author_id, title, summary, image_url]):
+        return jsonify({'error': 'Missing required fields'}), 400
+
+    # Create a new book instance
+    new_book = Book(
+        author_id=author_id,
+        title=title,
+        summary=summary,
+        image_url=image_url
+    )
+
+    # Add the book to the database
+    db.session.add(new_book)
+    db.session.commit()
+
+    # Return the newly created book details
+    return jsonify({
+        'message': 'Book created successfully',
+        'book': {
+            'id': new_book.id,
+            'author_id': new_book.author_id,
+            'title': new_book.title,
+            'summary': new_book.summary,
+            'image_url': new_book.image_url
+        }
+    }), 201
 
 @app.route('/book/<int:id>', methods=['PATCH', 'OPTIONS'])
-def update_book(id):
+def update_book():
     if request.method == 'OPTIONS':
         # Respond to preflight request
         return _build_cors_preflight_response()
@@ -357,15 +396,41 @@ def userlist_by_id(id):
         db.session.commit()
         return jsonify({'message': 'UserList deleted successfully'}), 200
 
-@app.route('/userLists/<int:user_list_id>/comments', methods=['GET'])
+@app.route('/userlists/<int:user_list_id>/comments', methods=['GET', 'POST'])
 def get_comments_for_user_list(user_list_id):
-    user_list = UserList.query.get(user_list_id)
-    if not user_list:
-        return jsonify({'error': 'UserList not found'}), 404  # Ensure this returns JSON
+    if request.method == 'GET':
+        user_list = User.query.get(user_list_id)
+        if not user_list:
+            return jsonify({'error': 'UserList not found'}), 404  # Ensure this returns JSON
+    
 
-    comments = [comment.to_dict() for comment in user_list.comments]  # Assuming comments is a relationship
-    return jsonify(comments), 200 
-
+        comments = [comment.to_dict() for comment in user_list.comments]  # Assuming comments is a relationship
+        return jsonify(comments), 200 
+    elif request.method == 'POST':
+        try:
+            data = request.get_json(force=True)
+            if not data:
+                return jsonify({'error': 'Bad request, no JSON data provided'}), 400
+            
+            required_fields = ['user_id', 'book_id', 'content', 'image_url']
+            if not all(field in data for field in required_fields):
+                return jsonify({'error': 'Bad request, user_id, book_id, content, and image_url are required'}), 400
+            
+            # Create a new UserList entry
+            newComment= Comment(
+                user_id=data['user_id'],
+                book_id=data['book_id'],
+                content=data['content'],
+                image_url=data['image_url']
+            )
+            db.session.add(newComment)
+            db.session.commit()
+            return jsonify(newComment.to_dict()), 201
+        except Exception as e:
+            db.session.rollback()
+            print(f"Error occurred during POST: {e}")
+            return jsonify({'error': 'Internal Server Error'}), 500
+        
 @app.route('/routes', methods=['GET'])
 def show_routes():
     routes = []
