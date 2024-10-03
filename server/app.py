@@ -304,6 +304,7 @@ def user_by_id(id):
         db.session.delete(user)
         db.session.commit()
         return jsonify({'message': 'User deleted successfully'}), 200
+
     
 @app.route('/userlist', methods=['GET', 'POST'])
 def get_user_lists():
@@ -356,22 +357,14 @@ def userlist_by_id(id):
         db.session.commit()
         return jsonify({'message': 'UserList deleted successfully'}), 200
 
-@app.route('/user_list/<int:user_list_id>/add_book', methods=['POST'])
-def add_book_to_user_list_v2(user_list_id):  # Renamed function
-    data = request.json
-    book_id = data.get('book_id')
-
+@app.route('/userLists/<int:user_list_id>/comments', methods=['GET'])
+def get_comments_for_user_list(user_list_id):
     user_list = UserList.query.get(user_list_id)
-    book = Book.query.get(book_id)
+    if not user_list:
+        return jsonify({'error': 'UserList not found'}), 404  # Ensure this returns JSON
 
-    if not user_list or not book:
-        return jsonify({'error': 'UserList or Book not found'}), 404
-
-    # Add the book to the user's list
-    user_list.books.append(book)
-    db.session.commit()
-
-    return jsonify({'message': 'Book added to UserList successfully'}), 200
+    comments = [comment.to_dict() for comment in user_list.comments]  # Assuming comments is a relationship
+    return jsonify(comments), 200 
 
 @app.route('/routes', methods=['GET'])
 def show_routes():
@@ -385,12 +378,12 @@ def handle_comments():
     if request.method == 'GET':
         # Fetch comments from the database (Example logic)
         comments = [
-            {"id": 1, "content": "Great post!", "image_url": "https://th.bing.com/th/id/OIP.5QFMUWxvMdJFjr85wIw4egAAAA?rs=1&pid=ImgDetMain"},
-            {"id": 2, "content": "Interesting read.", "image_url": "https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1568095430l/53030953.jpg"},
-            {"id": 3, "content": "Interesting read.", "image_url":"https://oregairu.b-cdn.net/wp-content/uploads/2024/09/the-humble-familys-daughter-has-a-spatial-pocket-193x278.jpg"},
-            {"id": 4, "content": "Interesting read.", "image_url":"https://oregairu.b-cdn.net/wp-content/uploads/2024/09/the-humble-familys-daughter-has-a-spatial-pocket-193x278.jpg"},
-            {"id": 5, "content": "Interesting read.", "image_url":"https://th.bing.com/th/id/OIP.PJ0PyRXOXD-2gqlfs4RG-wHaHa?rs=1&pid=ImgDetMain"},
-            {"id": 6, "content": "Interesting read.", "image_url":"https://th.bing.com/th/id/OIP.GUXcERCo2_MQ_SnLrkvz7AAAAA?rs=1&pid=ImgDetMain"},
+            {"id": 1, "content": "This book had me hooked for a long time!", "image_url": "https://th.bing.com/th/id/OIP.5QFMUWxvMdJFjr85wIw4egAAAA?rs=1&pid=ImgDetMain"},
+            {"id": 2, "content": "I need the RAW title to this book. I can't put it down", "image_url": "https://images-na.ssl-images-amazon.com/images/S/compressed.photo.goodreads.com/books/1568095430l/53030953.jpg"},
+            {"id": 3, "content": "The FL is my cup of tea. Although the FL is smart, I still like how the ML is strong as well.", "image_url":"https://oregairu.b-cdn.net/wp-content/uploads/2024/09/the-humble-familys-daughter-has-a-spatial-pocket-193x278.jpg"},
+            {"id": 4, "content": "I need more coins for this book :(", "image_url":"https://oregairu.b-cdn.net/wp-content/uploads/2024/09/the-humble-familys-daughter-has-a-spatial-pocket-193x278.jpg"},
+            {"id": 5, "content": "This book is on FIIIRRRE!", "image_url":"https://th.bing.com/th/id/OIP.PJ0PyRXOXD-2gqlfs4RG-wHaHa?rs=1&pid=ImgDetMain"},
+            {"id": 6, "content": "Please share the RAW title", "image_url":"https://th.bing.com/th/id/OIP.GUXcERCo2_MQ_SnLrkvz7AAAAA?rs=1&pid=ImgDetMain"},
         ]
 
         return jsonify(comments), 200  # Return the list of comments
@@ -402,6 +395,7 @@ def handle_comments():
             new_comment = Comment(
                 content=data['content'],
                 user_id=data['user_id'],
+                userlist_id=data['userlist_id'],
                 book_id=data['book_id']
             )
 
@@ -425,6 +419,7 @@ def handle_comments():
 @app.route('/test', methods=['GET'])
 def test():
     return 'Test route is working!'
+
 
 
 @app.route('/comments/<int:comment_id>', methods=['PUT'])
@@ -466,6 +461,11 @@ def set_cookie():
         samesite='None'     # Allows cross-site usage
     )
     return response
+
+@app.route('/about_image', methods=['GET'])
+def get_about_image():
+    image_url = "https://www.pixelstalk.net/wp-content/uploads/images1/Free-book-hd-wallpapers.jpg"
+    return jsonify({"image_url": image_url})
 
 
 

@@ -173,6 +173,7 @@ def create_comments(user_ids):
         # Save the comments to the database
         db.session.bulk_save_objects(comments)
         db.session.commit()
+
 def create_user_lists():
     with app.app_context():
         # Assuming you already have users and books created
@@ -258,6 +259,6 @@ if __name__ == '__main__':# Clear the books table
     create_authors()
     create_books()
     user_ids = create_users()  # Get user ids
-    create_comments(user_ids,)
+    create_comments(user_ids)
     create_user_lists()
 
