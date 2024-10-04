@@ -204,7 +204,9 @@ def get_books():
             "image_url": "https://ik.imagekit.io/storybird/images/e2307839-0815-49f5-b883-10b480005981/0_985319130.png"  # Add the image URL
         },
     ]
-    return jsonify(books), 200
+
+    books_from_db=[book.to_dict() for book in Book.query.all()]
+    return jsonify(books_from_db), 200
 
 # Route to handle GET and POST for a single book
 @app.route('/book/<int:book_id>/comments', methods=['POST'])
@@ -273,14 +275,27 @@ def create_book():
     }), 201
 
 @app.route('/book/<int:id>', methods=['PATCH', 'OPTIONS'])
-def update_book():
+def update_book(id):
     if request.method == 'OPTIONS':
         # Respond to preflight request
         return _build_cors_preflight_response()
     # Handle the actual PATCH request here
     data = request.json
     # Process book update logic here
-    return jsonify({'message': 'Book updated successfully'})
+    book = Book.query.filter_by(id=id).first()
+    author = Author.query.filter_by(id=book.author.id).first()
+    
+    # for attr in data:
+    # setattr(book, attr, data[attr])
+    
+    setattr(book, "title", data.get('title'))
+    setattr(book, "image_url", data.get('image_url'))
+    setattr(author, "name", data.get('author').get('name'))
+    db.session.add(book)
+    db.session.add(author)
+    db.session.commit()
+
+    return make_response(book.to_dict(), 200)
 
 def _build_cors_preflight_response():
     response = jsonify()
@@ -298,14 +313,14 @@ def get_book(id):
     
     return jsonify(book.to_dict()) 
     
-@app.route('/book/<int:id>', methods=['DELETE'])
+@app.route('/books/<int:id>', methods=['DELETE'])
 def delete_book(id):
     book = Book.query.get(id)
-    if not book:
-        return jsonify({"error": "Book not found"}), 404
-    db.session.delete(book)
-    db.session.commit()
-    return jsonify({"message": "Book deleted successfully"}), 200
+    if book:
+        db.session.delete(book)
+        db.session.commit()
+        return '', 204  # No content
+    return jsonify({'error': 'Book not found'}), 404
 
 @app.route('/user_list/<int:user_list_id>/add_book', methods=['POST'])
 def add_book_to_user_list(user_list_id):
@@ -384,17 +399,18 @@ def get_user_lists():
 @app.route('/userlist/<int:id>', methods=['GET', 'DELETE'])
 def userlist_by_id(id):
     userlist = UserList.query.get(id)
+    
     if request.method == 'GET':
         if userlist is None:
             return jsonify({'error': 'UserList not found'}), 404
         return jsonify(userlist.to_dict())
 
     elif request.method == 'DELETE':
-        if userlist is None:
-            return jsonify({'error': 'UserList not found'}), 404
-        db.session.delete(userlist)
-        db.session.commit()
-        return jsonify({'message': 'UserList deleted successfully'}), 200
+        if userlist:
+            db.session.delete(userlist)
+            db.session.commit()
+            return '', 204  # No content for successful delete
+        return jsonify({'error': 'UserList not found'}), 404
 
 @app.route('/userlists/<int:user_list_id>/comments', methods=['GET', 'POST'])
 def get_comments_for_user_list(user_list_id):
