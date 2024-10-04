@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
+import { useFormik} from 'formik';
 
 
 // Define the BookCard component with default parameters for props
 const BookCard = ({ 
-    book = { title: "", author: "", image_url: "" }, 
+    book = { title: "", author: {}, image_url: "" }, 
     onDeleteBook = () => {}, 
     updateBook = () => {}, 
     addComments = () => {}, 
@@ -14,29 +15,73 @@ const BookCard = ({
     const [updatedBook, setUpdatedBook] = useState(book);
     const [newComment, setNewComment] = useState(""); // State to handle new comment input
     const [showComments, setShowComments] = useState(false); // State to track whether comments are visible
-
+    
     const handleEdit = () => {
         setIsEditing(!isEditing);
     };
 
     const handleUpdate = (e) => {
         e.preventDefault();
+        fetch(`http://127.0.0.1:5555/book/${book.id}`, {
+                            method: "PATCH",
+                            body: JSON.stringify(updatedBook),
+                            headers: { 'Content-Type': 'application/json' }
+                        })
         updateBook(updatedBook); // Call the updateBook function
         setIsEditing(false);
     };
 
     const handleChange = (e) => {
-        setUpdatedBook({
-            ...updatedBook,
-            [e.target.name]: e.target.value,
-        });
+        if (e.target.name==="author"){
+            setUpdatedBook({
+                ...updatedBook,
+                [e.target.name]: {...book.author, name: e.target.value}
+            }); 
+        }else {
+            setUpdatedBook({
+                ...updatedBook,
+                [e.target.name]: e.target.value,
+            });
+        }
+        
     };
+    
+    // const formik = useFormik({
+    //     initialValues: {
+    //         author_id: '',
+    //         title: '',
+    //         summary: '',
+    //         image_url: '',
+    //         comment: ''
+    //     },
+    //     validationSchema: schema,
+    //     onSubmit: (values) => {
+    //         if (isEdit) {
+    //             fetch(`http://127.0.0.1:5555/book/${id}`, {
+    //                 method: "PATCH",
+    //                 body: JSON.stringify(values),
+    //                 headers: { 'Content-Type': 'application/json' }
+    //             })
+    //             .then(res => {
+    //                 if (!res.ok) throw new Error("Failed to update book");
+    //                 return res.json();
+    //             })
+    //             .then(data => {
+    //                 console.log("Book updated:", data);
+    //                 navigate(`/book/${id}`);
+    //             })
+    //             .catch(err => console.error("Error updating book:", err));
+    //         } else {
+    //             handleAddBook(values); // Call the function to add the book
+    //         }
+    //     }
+    // });
 
     const handleCommentChange = (e) => {
         setNewComment(e.target.value); // Update newComment state
     };
 
-    console.log(newComment)
+    
     const handleAddComment = (e) => {
         e.preventDefault();
         console.log('form has been submitted')
@@ -51,7 +96,7 @@ const BookCard = ({
         setShowComments(!showComments); // Toggle the visibility of the comments
     };
 
-    console.log(book.image_url)
+    // console.log(book.image_url)
 
     return (
     
@@ -68,7 +113,7 @@ const BookCard = ({
                     <input
                         type="text"
                         name="author"
-                        value={updatedBook.author}
+                        value={updatedBook.author.name}
                         onChange={handleChange}
                         required
                     />
@@ -84,7 +129,7 @@ const BookCard = ({
             ) : (
                 <>
                     <h2>{book.title}</h2>
-                    <p>Author: {book.author}</p>
+                    <p>Author: {book.author.name}</p>
                     {book.image_url && <img src={book.image_url} alt={book.title} style={{ width: '100px', height: '150px' }} />}
                     <button onClick={handleEdit}>Edit</button>
                     <button onClick={() => onDeleteBook(book.id)}>Delete</button>
@@ -135,7 +180,7 @@ BookCard.propTypes = {
     book: PropTypes.shape({
         id: PropTypes.number.isRequired,
         title: PropTypes.string.isRequired,
-        author: PropTypes.string.isRequired,
+        author: PropTypes.object.isRequired,
         image_url: PropTypes.string, // image_url is optional
     }).isRequired,
     onDeleteBook: PropTypes.func.isRequired,

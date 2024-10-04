@@ -3,7 +3,7 @@ import { useFormik } from "formik";
 import * as yup from "yup";
 import React, { useEffect, useState, useRef } from "react";
 
-function BookForm() {
+function BookForm({addBook}) {
     const navigate = useNavigate();
     const { id } = useParams();
     const [isEdit, setIsEdit] = useState(false);
@@ -33,8 +33,9 @@ function BookForm() {
             }
         })
         .then(data => {
+            addBook(data)
             console.log(data);
-            navigate(data); // Navigate to the new book's page
+            navigate('/books'); // Navigate to the new book's page
         })
         .catch(error => {
             console.error("Error creating book:", error.message);

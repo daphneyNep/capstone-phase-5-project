@@ -5,7 +5,7 @@ import BookCard from './BookCard';
 const BookContainer = ({ books = [], onDeleteBook, addBook, updateBook, addComments, comments = [] }) => {
     const [newBook, setNewBook] = useState({ title: '', author: '', image_url: '' });
     const [newComment, setNewComment] = useState({ user_id: '', book_id: '' });
-
+    console.log(books)
     // Handle input change for adding a new book
     const handleAddBook = (e) => {
         setNewBook({

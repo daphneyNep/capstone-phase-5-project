@@ -118,7 +118,7 @@ function App() {
   const addRatings = (rating) => setRatings((prev) => [...prev, rating]);
   
   // const onSelectedBooks = (book) => setOnSelectedBooks((prev) => [...prev, book]);
-  
+  console.log(books)
 
   const onDeleteAuthor = (id) => {
     console.log(`onDeleting author with id: ${id}`);
@@ -132,22 +132,39 @@ function App() {
 
   const onDeleteBook = (id) => {
     console.log(`onDelete book with id: ${id}`);
-    fetch(`http://127.0.0.1:5555/books/${id}`, { method: 'DELETE' }) // Fix the URL here
+    fetch(`http://127.0.0.1:5555/books/${id}`, {
+      method: 'DELETE',
+    })
       .then(response => {
-        if (!response.ok) throw new Error('Failed to delete book');
+        if (!response.ok) {
+          return response.json().then(err => { throw new Error(err.error || 'Failed to delete book') });
+        }
         setBooks(prev => prev.filter(book => book.id !== id));
       })
-      .catch(error => console.error('Error:', error));
+      .catch(error => {
+        console.error('Error:', error);
+        alert('Failed to delete the book. Please try again later.');
+      });
   };
+  
 
   const handleDeleteUser = (id) => {
     console.log(`Attempting to delete user with ID: ${id}`);
-    fetch(`http://127.0.0.1:5555/user/${id}`, { method: 'DELETE' })
+    fetch(`http://127.0.0.1:5555/user/${id}`, {
+      method: 'DELETE',
+    })
       .then((response) => {
-        if (!response.ok) throw new Error(`Failed to delete user`);
+        if (!response.ok) {
+          return response.json().then((err) => {
+            throw new Error(err.error || 'Failed to delete user');
+          });
+        }
         setUsers((prev) => prev.filter((user) => user.id !== id));
       })
-      .catch((error) => console.error('Error while deleting user:', error));
+      .catch((error) => {
+        console.error('Error while deleting user:', error);
+        alert('An error occurred while trying to delete the user.');
+      });
   };
 
   const onDeleteUserList = (id) => {
@@ -193,8 +210,9 @@ function App() {
   
 
   // Filter the books and authors based on the searchTerm
-  const filteredBooks = books.filter(book =>
-    book.title.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredBooks = books.filter(book => 
+    book.title?.toLowerCase().includes(searchTerm?.toLowerCase())
+
   );
   
   const filteredAuthors = authors.filter(author =>
@@ -210,12 +228,12 @@ function App() {
   const filteredUserLists = userLists.filter(userlist =>
     String(userlist.user_id).toLowerCase().includes(searchTerm.toLowerCase())
   );
-  const updateBook = (id, updatedBook) => {
-    setBooks(books.map(book => (book.id === id ? updatedBook : book)));
+  const updateBook = (updatedBook) => {
+    setBooks(books.map(book => (book.id === updatedBook.id ? updatedBook : book)));
   };
 
-const handleEdit = (id, updatedAuthor) => {
-  setAuthors((prevAuthors) => 
+  const handleEdit = (id, updatedAuthor) => {
+    setAuthors((prevAuthors) => 
     prevAuthors.map(author => (author.id === id ? updatedAuthor : author))
   );
 };
