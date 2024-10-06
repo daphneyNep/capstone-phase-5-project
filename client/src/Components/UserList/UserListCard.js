@@ -134,7 +134,7 @@ const UserListCard = ({
             onChange={handleCommentChange}
             placeholder="Add a comment"
             rows="4"
-            style={{ width: "100%" }}
+            style={{ width: "50%" }}
           />
           <button type="submit">Submit</button>
         </form>

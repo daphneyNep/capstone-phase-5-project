@@ -8,17 +8,7 @@ const AuthorCard = ({ authors = [], onDeleteAuthor, onEdit }) => {
     <div className="author-card">
       {authors.map((author) => (
         <div key={author.id} className="author">
-          {/* Display the author's image */}
-          {author.image_url && (
-            <img src={author.image_url} alt={author.name} className="author-image" style={{
-              width: "100px",
-              height: "auto",
-              borderRadius: "50%",
-              marginBottom: "10px"
-            }}
-          />
-          )}
-          {/* <motion.div animate={{ x: 100 }} /> */}
+          {author.image_url && <img src={author.image_url} alt={author.title} style={{ width: '100px', height: '150px' }} />}
           <h3>{author.name}</h3>
           <button onClick={() => onEdit(author)}>Edit</button>
           <button onClick={() => onDeleteAuthor(author.id)}>Delete</button>

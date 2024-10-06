@@ -7,7 +7,8 @@ const CommentCard = ({ comment, onDeleteComment }) => {
   return (
     <div>
       <h3>{comment.title || ""}</h3>
-      <img src={comment.image_url || "/default-image.jpg"} alt="Comment" />
+      {/* <img src={comment.image_url || "/default-image.jpg"} alt="Comment" /> */}
+      {comment.image_url && <img src={comment.image_url} alt={comment.title} style={{ width: '100px', height: '150px' }} />}
 
       {/* Use defaultValue for a non-editable field */}
       <label htmlFor={`content-${comment.id}`}>Content</label>
