@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';  // Import motion from framer-motion
 
 const About = () => {
   const [image_url, setImageUrl] = useState("");
@@ -9,11 +10,27 @@ const About = () => {
       .then((data) => setImageUrl(data.image_url));
   }, []);
 
+  // Define animation variants for the section and image
+  const sectionVariants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { duration: 1 } }
+  };
+
+  const imageVariants = {
+    hidden: { scale: 0 },
+    visible: { scale: 1, transition: { type: "spring", stiffness: 100, damping: 10 } }
+  };
+
   return (
-    <section className="about">
+    <motion.section 
+      className="about"
+      initial="hidden"
+      animate="visible"
+      variants={sectionVariants}  // Apply the section animation
+    >
       <h2>FunReadNovel</h2>
       <p>
-        FunReadNovel is an interactive web novel app that allows users to read, select books, comment on, and rate books while providing insights into their impact and popularity. This platform is designed to give book lovers a deeper connection with their favorite books and authors. Users can share their thoughts and opinions regarding their booklist.
+        FunReadNovel is an interactive app that allows its users to read, select and comment on their favorite books. This platform was designed to give book lovers a deeper connection with their favorite books and authors, as well as sharing their thoughts and opinions regarding their most recent favorite book.
       </p>
       <p>
         Join our community of book lovers, authors, and commentators on FunReadNovel, where we can let our imagination run wild with our vast collection of books across many genres to choose from!
@@ -21,7 +38,7 @@ const About = () => {
       <div style={{ textAlign: 'center' }}>
         <h1>About</h1>
         {image_url && (
-          <img 
+          <motion.img 
             src={image_url} 
             alt="About" 
             style={{ 
@@ -30,10 +47,13 @@ const About = () => {
               display: 'block', 
               margin: '0 auto'  // Center the image
             }} 
+            initial="hidden"
+            animate="visible"
+            variants={imageVariants}  // Apply image animation
           />
         )}
       </div>
-    </section>
+    </motion.section>
   );
 };
 

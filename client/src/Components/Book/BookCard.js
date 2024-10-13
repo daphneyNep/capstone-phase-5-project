@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { useFormik} from 'formik';
+import { motion } from 'framer-motion'; // Import motion from Framer Motion
 
-
-// Define the BookCard component with default parameters for props
 const BookCard = ({ 
     book = { title: "", author: {}, image_url: "" }, 
     onDeleteBook = () => {}, 
@@ -13,94 +11,68 @@ const BookCard = ({
 }) => {
     const [isEditing, setIsEditing] = useState(false);
     const [updatedBook, setUpdatedBook] = useState(book);
-    const [newComment, setNewComment] = useState(""); // State to handle new comment input
-    const [showComments, setShowComments] = useState(false); // State to track whether comments are visible
-    
-    const handleEdit = () => {
-        setIsEditing(!isEditing);
+    const [newComment, setNewComment] = useState("");
+    const [showComments, setShowComments] = useState(false);
+
+    // Animation variants
+    const cardVariants = {
+        hidden: { opacity: 0, y: 20 }, // Starting state
+        visible: { opacity: 1, y: 0 }, // Visible state
+        hover: { scale: 1.05 }, // Hover effect
     };
+
+    const commentVariants = {
+        hidden: { opacity: 0, height: 0 }, // Hidden comments
+        visible: { opacity: 1, height: "auto", transition: { duration: 0.3 } }, // Visible comments
+    };
+
+    const handleEdit = () => setIsEditing(!isEditing);
 
     const handleUpdate = (e) => {
         e.preventDefault();
         fetch(`http://127.0.0.1:5555/book/${book.id}`, {
-                            method: "PATCH",
-                            body: JSON.stringify(updatedBook),
-                            headers: { 'Content-Type': 'application/json' }
-                        })
-        updateBook(updatedBook); // Call the updateBook function
+            method: "PATCH",
+            body: JSON.stringify(updatedBook),
+            headers: { 'Content-Type': 'application/json' },
+        });
+        updateBook(updatedBook);
         setIsEditing(false);
     };
 
     const handleChange = (e) => {
-        if (e.target.name==="author"){
+        if (e.target.name === "author") {
             setUpdatedBook({
                 ...updatedBook,
-                [e.target.name]: {...book.author, name: e.target.value}
-            }); 
-        }else {
+                [e.target.name]: { ...book.author, name: e.target.value },
+            });
+        } else {
             setUpdatedBook({
                 ...updatedBook,
                 [e.target.name]: e.target.value,
             });
         }
-        
-    };
-    
-    // const formik = useFormik({
-    //     initialValues: {
-    //         author_id: '',
-    //         title: '',
-    //         summary: '',
-    //         image_url: '',
-    //         comment: ''
-    //     },
-    //     validationSchema: schema,
-    //     onSubmit: (values) => {
-    //         if (isEdit) {
-    //             fetch(`http://127.0.0.1:5555/book/${id}`, {
-    //                 method: "PATCH",
-    //                 body: JSON.stringify(values),
-    //                 headers: { 'Content-Type': 'application/json' }
-    //             })
-    //             .then(res => {
-    //                 if (!res.ok) throw new Error("Failed to update book");
-    //                 return res.json();
-    //             })
-    //             .then(data => {
-    //                 console.log("Book updated:", data);
-    //                 navigate(`/book/${id}`);
-    //             })
-    //             .catch(err => console.error("Error updating book:", err));
-    //         } else {
-    //             handleAddBook(values); // Call the function to add the book
-    //         }
-    //     }
-    // });
-
-    const handleCommentChange = (e) => {
-        setNewComment(e.target.value); // Update newComment state
     };
 
-    
+    const handleCommentChange = (e) => setNewComment(e.target.value);
+
     const handleAddComment = (e) => {
         e.preventDefault();
-        console.log('form has been submitted')
         if (newComment.trim()) {
-            console.log('if statement is working')
-            addComments({ image_url: book.image_url, bookId: book.id, content: newComment }); // Call the addComments function with the new comment
-            setNewComment(""); // Reset the input field after adding the comment
+            addComments({ image_url: book.image_url, bookId: book.id, content: newComment });
+            setNewComment(""); // Reset input
         }
     };
 
-    const toggleComments = () => {
-        setShowComments(!showComments); // Toggle the visibility of the comments
-    };
-
-    // console.log(book.image_url)
+    const toggleComments = () => setShowComments(!showComments);
 
     return (
-    
-        <li className="card">
+        <motion.li 
+            className="card" 
+            initial="hidden" 
+            animate="visible" 
+            whileHover="hover" 
+            variants={cardVariants}
+        >
             {isEditing ? (
                 <form onSubmit={handleUpdate}>
                     <input
@@ -130,48 +102,57 @@ const BookCard = ({
                 <>
                     <h2>{book.title}</h2>
                     <p>Author: {book.author.name}</p>
-                    {book.image_url && <img src={book.image_url} alt={book.title} style={{ width: '100px', height: '150px' }} />}
+                    {book.image_url && (
+                        <motion.img 
+                            src={book.image_url} 
+                            alt={book.title} 
+                            style={{ width: '100px', height: '150px' }} 
+                            whileHover={{ scale: 1.1 }} // Image hover effect
+                        />
+                    )}
                     <button onClick={handleEdit}>Edit</button>
                     <button onClick={() => onDeleteBook(book.id)}>Delete</button>
                 </>
             )}
 
-            {/* View/Hide Comments link */}
             <button onClick={toggleComments}>
                 {showComments ? 'Hide Comments' : 'View Comments'}
             </button>
 
-            {/* Conditionally render the comments section */}
-            {showComments && (
-                <>
-                    <h3>Comments</h3>
-                    <ul>
-                        {comments.length > 0 ? (
-                            comments.map(comment => (
-                                comment.id && comment.content ? (
-                                    <li key={comment.id}>{comment.content}</li>
-                                ) : null // Only render comments that have valid id and content
-                            ))
-                        ) : (
-                            <p>No comments available</p>
-                        )}
-                    </ul>
-
-                    {/* Form to add a new comment */}
-                    <form onSubmit={handleAddComment}>
-                        <input
-                            type="text"
-                            name="newComment"
-                            value={newComment}
-                            onChange={handleCommentChange}
-                            placeholder="Add a comment"
-                            required
-                        />
-                        <button type="submit">Add Comment</button>
-                    </form>
-                </>
-            )}
-        </li>
+            <motion.div
+                initial="hidden"
+                animate={showComments ? "visible" : "hidden"}
+                variants={commentVariants}
+            >
+                {showComments && (
+                    <>
+                        <h3>Comments</h3>
+                        <ul>
+                            {comments.length > 0 ? (
+                                comments.map((comment) => (
+                                    comment.id && comment.content ? (
+                                        <li key={comment.id}>{comment.content}</li>
+                                    ) : null
+                                ))
+                            ) : (
+                                <p>No comments available</p>
+                            )}
+                        </ul>
+                        <form onSubmit={handleAddComment}>
+                            <input
+                                type="text"
+                                name="newComment"
+                                value={newComment}
+                                onChange={handleCommentChange}
+                                placeholder="Add a comment"
+                                required
+                            />
+                            <button type="submit">Add Comment</button>
+                        </form>
+                    </>
+                )}
+            </motion.div>
+        </motion.li>
     );
 };
 
@@ -185,10 +166,10 @@ BookCard.propTypes = {
     }).isRequired,
     onDeleteBook: PropTypes.func.isRequired,
     updateBook: PropTypes.func.isRequired,
-    addComments: PropTypes.func.isRequired, // Function to add comments
+    addComments: PropTypes.func.isRequired,
     comments: PropTypes.arrayOf(
         PropTypes.shape({
-            id: PropTypes.number, // Make id optional
+            id: PropTypes.number,
             content: PropTypes.string.isRequired,
         })
     ), // Comments must be an array of objects

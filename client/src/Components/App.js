@@ -198,7 +198,7 @@ function App() {
         console.error('Error while deleting comment:', error);
         alert('Failed to delete comment. Please try again later.');
       });
-  };
+};
 
   const handleSelectedBooks = (bookId) => {
     const selectedBook = books.find(book => book.id === bookId);
