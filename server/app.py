@@ -527,9 +527,17 @@ def update_comment(comment_id):
 
 @app.route('/comment/<int:id>', methods=['DELETE'])
 def delete_comment(id):
-    comment = Comment.query.get_or_404(id)
+    logging.info(f"Attempting to delete comment with ID: {id}")
+    
+    comment = db.session.get(Comment, id)  # Updated line
+    if not comment:
+        logging.error(f"Comment with ID {id} not found.")
+        return jsonify({'error': 'Comment not found'}), 404
+    
     db.session.delete(comment)
     db.session.commit()
+    
+    logging.info(f"Comment with ID {id} deleted successfully.")
     return jsonify({'message': 'Comment deleted successfully'}), 200
 
 @app.route('/set-cookie')
